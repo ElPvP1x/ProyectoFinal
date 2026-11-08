@@ -1,0 +1,15 @@
+# Fuentes del observatorio (capa Bronce). Agregar/quitar aqui, no en el codigo.
+fuentes:
+  - id: banxico_sie
+    tipo: api
+    url_base: https://www.banxico.org.mx/SieAPIRest/service/v1/series
+    token_env: BANXICO_TOKEN        # secreto de GitHub Actions
+    desde: "2010-01-01"             # >= 36 periodos mensuales de sobra
+    series:
+      - {id: SP1, nombre: inpc_general_mensual}
+      # TODO: agregar series de alimentos/agro de Banxico SIE (buscar en el catalogo SIE)
+  - id: inegi_bie
+    tipo: api
+    # TODO: indicador de INPC "Frutas y verduras" / "Alimentos" del BIE de INEGI
+    # url ejemplo: https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/INDICATOR/{id}/es/0700/false/BIE/2.0/{token}?type=json
+    activa: false
