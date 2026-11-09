@@ -1,0 +1,25 @@
+name: captura-bronce
+on:
+  schedule:
+    - cron: "0 14 * * 1"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  capturar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: python src/extractor.py
+        env:
+          BANXICO_TOKEN: ${{ secrets.BANXICO_TOKEN }}
+      - name: Guardar capturas en el repo
+        run: |
+          git config user.name "bot-captura"
+          git config user.email "bot@users.noreply.github.com"
+          git add datos/
+          git diff --cached --quiet || git commit -m "captura bronce $(date -u +%F)"
+          git push

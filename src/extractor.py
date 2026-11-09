@@ -2,7 +2,7 @@
 import hashlib, json, os, sys, time, datetime as dt, pathlib
 import requests, yaml
 
-UA = "ObservatorioAgro-Academico/0.1 (proyecto escolar; contacto en el README del repo)"
+UA = "ObservatorioVivienda-Academico/0.1 (proyecto escolar; contacto en el README del repo)"
 RAIZ = pathlib.Path(__file__).resolve().parents[1]
 
 def guardar(fuente, serie, contenido: bytes):
