@@ -2,8 +2,8 @@
 
 | Campo | Valor |
 |---|---|
-| Equipo / integrantes | [Nombre 1], [Nombre 2] |
-| Repositorio | [url] |
+| Equipo / integrantes | Cristopher [apellidos], Yerik Monroy García |
+| Repositorio | https://github.com/ElPvP1x/ProyectoFinal |
 | Tag | `e0` |
 | Profesores agregados como colaboradores | [usuario 1], [usuario 2], [usuario 3] |
 
@@ -11,11 +11,11 @@
 
 | Entregable | Ubicación | Estado |
 |---|---|---|
-| Propuesta | `docs/E0/propuesta.md` | [ ] |
-| Extractor | `src/extractor.py` | [ ] |
-| Automatización | `.github/workflows/captura.yml` | [ ] corrió con éxito (link a la ejecución) |
-| Serie histórica Bronce (≥ 36 periodos) | `datos/bronce/` y `datos/bronce/manifiesto.csv` | [ ] periodos: [__] |
-| Registros PSP | `calidad/tiempo-*.csv`, `calidad/defectos-*.csv` | [ ] |
+| Propuesta | `docs/E0/propuesta.md` | [ ] pendiente: entrevista |
+| Extractor | `src/extractor.py` | [x] |
+| Automatización | `.github/workflows/captura.yml` | [x] corrió con éxito: captura del 2026-11-09 (commit del bot en `main`) |
+| Serie histórica Bronce (≥ 36 periodos) | `datos/bronce/` y `datos/bronce/manifiesto.csv` | [x] periodos: 202 (INPC general mensual, 2010-01 a 2026-10) |
+| Registros PSP | `calidad/tiempo-*.csv`, `calidad/defectos-*.csv` | [x] archivos creados; falta registrar tiempos y defectos reales |
 
 ## 3 objetivos de calidad medibles
 
