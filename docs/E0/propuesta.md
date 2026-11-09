@@ -8,7 +8,7 @@
 | Región | México (nivel nacional; en E3 se compararán estados o ciudades) |
 | Pregunta detonadora | ¿Cómo se va a comportar el precio de la vivienda en México en los próximos 6 a 12 meses y qué factores lo mueven más (tasas, inflación, ingreso, oferta)? |
 | Cliente potencial | Desarrolladoras, inmobiliarias, corredores y familias que planean comprar que necesita decidir cuándo comprar, vender, construir o contratar un crédito |
-| Integrantes | Cristopher [apellidos], Yerik Monroy García |
+| Integrantes | Cristopher Amaro Granero, Yerik Monroy García |
 
 ## 2. Entrevista de campo (mínimo 15 min)
 

@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Equipo / integrantes | Cristopher [apellidos], Yerik Monroy García |
+| Equipo / integrantes | Cristopher Amaro Granero, Yerik Monroy García |
 | Repositorio | https://github.com/ElPvP1x/ProyectoFinal |
 | Tag | `e0` |
 | Profesores agregados como colaboradores | [usuario 1], [usuario 2], [usuario 3] |
