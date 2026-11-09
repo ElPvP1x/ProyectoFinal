@@ -1,7 +1,5 @@
 # Propuesta del Observatorio — Vivienda y Precios
 
-> Los textos entre [CORCHETES] los tienen que completar ustedes. Lo demás es un borrador listo para ajustar.
-
 ## 1. Ficha del observatorio
 
 | Campo | Contenido |
@@ -14,11 +12,9 @@
 
 ## 2. Entrevista de campo (mínimo 15 min)
 
-Entrevistado: [nombre, ocupación, empresa]. Fecha: [__]. Duración: [__ min]. Medio: [presencial / llamada].
+**Estado: pendiente.** La entrevista de campo no se alcanzó a realizar antes de la fecha de entrega de E0. No se incluyen respuestas simuladas ni inventadas. El guion completo está en [guion-entrevista.md](guion-entrevista.md) y el formato de registro en [notas-entrevista.md](notas-entrevista.md). Se realizará con un agente inmobiliario o asesor hipotecario y se actualizará esta sección, junto con la pregunta detonadora y los factores de E2, en cuanto se cuente con ella.
 
-Posibles entrevistados: agente inmobiliario, desarrollador, valuador, asesor hipotecario, o alguien que compró vivienda hace poco.
-
-Preguntas sugeridas (cámbienlas por las que realmente hagan):
+Preguntas que se harán (5):
 
 1. ¿Cuál es la decisión del año que más le preocupa (comprar, vender, construir, financiar) y qué dato le gustaría tener antes de tomarla?
 2. ¿Cómo se entera hoy de los precios de la vivienda y qué tan confiable le parece esa fuente?
@@ -26,9 +22,9 @@ Preguntas sugeridas (cámbienlas por las que realmente hagan):
 4. ¿Qué pasó la última vez que se equivocó en el precio o en la tasa esperada y cuánto le costó?
 5. Si le diéramos un pronóstico mensual de precios de vivienda, ¿cómo lo usaría y cuánto estaría dispuesto a pagar por él?
 
-**Respuestas:** [resumen de cada una, con frases textuales cortas].
+**Respuestas:** pendiente.
 
-**Aprendizajes:** [3 a 5 cosas que cambiaron o confirmaron su pregunta].
+**Aprendizajes:** pendiente.
 
 ## 3. Las 3 preguntas analíticas
 

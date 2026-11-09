@@ -11,7 +11,7 @@
 
 | Entregable | Ubicación | Estado |
 |---|---|---|
-| Propuesta | `docs/E0/propuesta.md` | [ ] pendiente: entrevista |
+| Propuesta | `docs/E0/propuesta.md` | [ ] incompleta: entrevista de campo pendiente (ver sección 2) |
 | Extractor | `src/extractor.py` | [x] |
 | Automatización | `.github/workflows/captura.yml` | [x] corrió con éxito: captura del 2026-11-09 (commit del bot en `main`) |
 | Serie histórica Bronce (≥ 36 periodos) | `datos/bronce/` y `datos/bronce/manifiesto.csv` | [x] periodos: 202 (INPC general mensual, 2010-01 a 2026-10) |
