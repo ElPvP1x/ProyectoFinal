@@ -7,8 +7,14 @@
 | Sector | Vivienda: precios de compra y costo del financiamiento hipotecario |
 | Región | México (nivel nacional; en E3 se compararán estados o ciudades) |
 | Pregunta detonadora | ¿Cómo se va a comportar el precio de la vivienda en México en los próximos 6 a 12 meses y qué factores lo mueven más (tasas, inflación, ingreso, oferta)? |
-| Cliente potencial | Desarrolladoras, inmobiliarias, corredores y familias que planean comprar que necesita decidir cuándo comprar, vender, construir o contratar un crédito |
+| Cliente potencial | Desarrolladoras, inmobiliarias, corredores y familias que planean comprar y necesitan decidir cuándo comprar, vender, construir o contratar un crédito |
 | Integrantes | Cristopher Amaro Granero, Yerik Monroy García |
+
+### 1.1 Contexto y justificación
+
+Para la mayoría de los hogares la vivienda es la compra más grande de su vida y se paga con un crédito a 15 o 20 años, así que una variación en el precio o en la tasa hipotecaria cambia el enganche, la mensualidad y hasta si la familia califica para el crédito. Del lado de la oferta, una desarrolladora vende uno o dos años después de iniciar un proyecto, por lo que su rentabilidad depende de cómo se muevan precios y tasas en ese intervalo.
+
+La información existe, pero está dispersa y llega con rezago: los índices de precios de vivienda son trimestrales y se publican semanas después, la inflación y las tasas salen en otros sitios, y los portales inmobiliarios muestran precios de oferta, no de cierre. El observatorio junta las fuentes oficiales, las actualiza de forma automática y las convierte en un pronóstico, una explicación de los factores y una comparación entre regiones. El primer cliente con el que se validará es el agente inmobiliario o asesor hipotecario, porque está en contacto con desarrolladoras y compradores.
 
 ## 2. Entrevista de campo (mínimo 15 min)
 
@@ -34,6 +40,12 @@ Preguntas que se harán (5):
 | E2 Experimentos | ¿Qué factores cambian significativamente el precio o la demanda? | Factores: tipo de vivienda (nueva / usada), rango de tasa hipotecaria, trimestre del año, con 2 o 3 niveles cada uno |
 | E3 Multivariado | ¿Qué estados o ciudades se parecen en su comportamiento? | Grupos a comparar: estados o ciudades de México usando varias variables a la vez (precio, variación anual, inflación de vivienda, tasa, volatilidad) |
 
+### 3.1 Hipótesis, método y criterio de éxito
+
+* **E1:** se espera una tendencia creciente que responde con rezago a la inflación y a la tasa. Se compararán un modelo ingenuo, Holt-Winters y SARIMA con los últimos 6 a 8 periodos como prueba; el éxito es un MAPE menor que el del modelo ingenuo y un pronóstico con intervalo de confianza.
+* **E2:** se espera que el tipo de vivienda y el nivel de tasa tengan efecto significativo y el trimestre uno menor. Se analizará un diseño factorial con ANOVA (verificando normalidad y varianzas) al 5 % de significancia.
+* **E3:** se espera que los estados formen pocos grupos (mercados de alza rápida y volátiles frente a estables). Se estandarizarán las variables, se aplicará PCA y k-medias o clúster jerárquico, eligiendo el número de grupos con el codo y la silueta.
+
 ## 4. Plan de recopilación de datos
 
 | # | Fuente | Qué se descarga | Frecuencia | Método |
@@ -49,3 +61,19 @@ Preguntas que se harán (5):
 | INEGI BIE | https://www.inegi.org.mx/robots.txt — revisado el 8-nov-2026. Permite `/app` (donde vive la API); solo prohíbe rutas de catálogo y descarga del RNM, que no usamos. | https://www.inegi.org.mx/inegi/terminos.html — Permite copiar, adaptar y explotar la información conservando metadatos; hay que citar "Fuente: INEGI, [producto]", avisar si se hizo análisis o transformación y no sugerir aval del INEGI. | Se usa la API oficial con token propio, con pausa de 2 s |
 
 Reglas que seguimos: identificarnos con User-Agent, no pasar de 1 solicitud cada 2 segundos, no tocar datos personales, citar la fuente y guardar los datos crudos sin modificar.
+
+## 5. Arquitectura de datos
+
+```
+APIs ──▶ Bronce (crudo) ──▶ Plata (validado) ──▶ Oro (análisis)
+```
+
+* **Bronce (E0, en operación):** la respuesta de cada API tal como llegó, con fecha y hash SHA-256 en `manifiesto.csv`; nunca se modifica. Hoy contiene 202 periodos mensuales del INPC general (enero 2010 a octubre 2026), capturados cada lunes con GitHub Actions.
+* **Plata (E1):** series limpias, con fechas y valores numéricos, sin duplicados y con una puerta de calidad que rechaza capturas incompletas.
+* **Oro (E3):** tablas listas para cada pregunta: la serie para E1, la tabla factorial para E2 y la matriz estado × variable para E3.
+
+## 6. Riesgos principales
+
+* **La serie capturada (INPC general) no mide el precio de la vivienda.** Antes de E1 se agregarán el índice de precios de vivienda (por ejemplo, el de la Sociedad Hipotecaria Federal) y el INPC de vivienda de INEGI; como son trimestrales, se usará la serie más larga para cumplir los 36 periodos.
+* **La API cambia de formato o se cae.** El crudo se guarda tal cual y la limpieza vive en Plata, así que un cambio no destruye lo capturado; el workflow marca error y queda registrado.
+* **La entrevista no confirma la pregunta detonadora.** Se ajustarán la pregunta y los factores de E2 antes de iniciar E1.
