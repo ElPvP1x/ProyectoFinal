@@ -1,8 +1,8 @@
 # Notas de entrevista de campo
 
-**Observatorio Vivienda y Precios** · Etapa E0 · Evidencia para la sección 2 de la [propuesta](propuesta.md)
+**Observatorio Contabilidad y Cumplimiento Fiscal** · Etapa E0 · Evidencia para la sección 2 de la [propuesta](propuesta.md)
 
-> Formato de notas listo para llenar durante y después de la entrevista. Los campos entre `[corchetes]` son los que faltan por registrar. Las respuestas deben ser reales: no se inventan ni se completan de memoria.
+> Formato listo para llenar durante y después de la entrevista. Los campos entre `[corchetes]` faltan por registrar. Las respuestas deben ser reales: no se inventan ni se completan de memoria.
 
 ---
 
@@ -11,64 +11,65 @@
 | Campo | Registro |
 |---|---|
 | **Entrevistado** | [nombre] (o "anónimo" si lo solicitó) |
-| **Ocupación / empresa** | [agente, desarrollador, valuador, asesor hipotecario o comprador reciente] / [empresa] |
+| **Ocupación / empresa** | [contador público, despacho o dueño de PyME] / [empresa] |
 | **Años de experiencia** | [__] |
-| **Zona en la que opera** | [ciudad o estado] |
+| **Tipo de clientes** | [servicios / comercio / hospedaje / otros] |
 | **Fecha** | [dd-mmm-2026] |
 | **Hora de inicio / fin** | [hh:mm] / [hh:mm] |
 | **Duración real** | [__ min] (mínimo exigido: 15 min) |
 | **Medio** | [presencial / llamada] |
 | **Entrevistador** | [nombre] |
-| **Anotador y cronometrista** | Yerik Monroy García / [nombre] |
+| **Anotador y cronometrista** | [nombre] |
 | **Permiso de audio** | [sí / no] |
 | **Permiso de citar su nombre** | [sí / no] |
 | **Evidencia guardada** | [ruta del audio o foto de notas] |
 
-**Objetivo.** Entender cómo toman decisiones quienes trabajan en el sector vivienda, para validar y ajustar la pregunta detonadora del observatorio:
+**Objetivo.** Entender cómo trabaja quien hace contabilidad en México, para validar y ajustar la pregunta detonadora:
 
-> ¿Cómo se va a comportar el precio de la vivienda en México en los próximos 6 a 12 meses y qué factores lo mueven más (tasas, inflación, ingreso, oferta)?
+> ¿Cómo se va a comportar el tipo de cambio USD/MXN en los próximos 6 meses y cuánto cambia el total deducible de un contribuyente según el criterio fiscal que use el contador?
 
 ---
 
 ## 2. Registro por pregunta
 
-### P1. Decisión clave
+### P1. Tarea que más tiempo quita
 
-*¿Cuál es la decisión del año que más le preocupa (comprar, vender, construir, financiar) y qué dato le gustaría tener antes de tomarla?*
-
-| | |
-|---|---|
-| **Respuesta (resumen)** | [ ] |
-| **Cita textual** | "[ ]" |
-| **Sondeos** | Anticipación con que decide: [ ] · Costo de decidir tarde: [ ] · Quién más participa: [ ] |
-
-### P2. Fuentes actuales de información
-
-*¿Cómo se entera hoy de los precios de la vivienda y qué tan confiable le parece esa fuente?*
+*¿Cuál es la parte de su trabajo que más tiempo le quita en el mes y qué dato le gustaría tener antes de empezar?*
 
 | | |
 |---|---|
 | **Respuesta (resumen)** | [ ] |
 | **Cita textual** | "[ ]" |
-| **Fuentes mencionadas** | [SHF / INEGI / portales / avalúos / colegas / otra] |
-| **Rezago y confiabilidad** | [ ] |
-| **Discrepancias con la realidad** | [ ] |
+| **Horas al mes** | [ ] |
+| **Cuándo se vuelve más pesado** | [ ] |
 
-### P3. Factores que mueven el precio
+### P2. Cómo revisa hoy las facturas
 
-*¿Qué factores (tasas de interés, temporada, zona, oferta de nuevos desarrollos, inflación, ingreso) le suben o le bajan más los precios?*
+*¿Cómo revisa las facturas que descarga del SAT y qué tan confiable le parece ese proceso?*
 
 | | |
 |---|---|
 | **Respuesta (resumen)** | [ ] |
 | **Cita textual** | "[ ]" |
-| **Ranking de factores (mayor a menor efecto)** | 1. [ ] · 2. [ ] · 3. [ ] · 4. [ ] |
-| **Diferencia vivienda nueva vs. usada** | [ ] |
-| **Temporadas fuertes o débiles** | [ ] |
+| **Herramientas que usa** | [Excel / XML / sistema contable / otra] |
+| **Tiempo por cliente** | [ ] |
+| **Diferencias con el portal del SAT** | [ ] |
+
+### P3. Qué cambia el monto deducible
+
+*¿Qué situaciones le cambian más el monto que puede deducir: notas de crédito, facturas en parcialidades (PPD), pagos en efectivo, facturas en dólares?*
+
+| | |
+|---|---|
+| **Respuesta (resumen)** | [ ] |
+| **Cita textual** | "[ ]" |
+| **Ranking (mayor a menor efecto)** | 1. [ ] · 2. [ ] · 3. [ ] · 4. [ ] |
+| **Tipo de cambio que usa en facturas en USD** | [DOF / FIX / el del CFDI / otro] |
+| **Diferencias por giro del cliente** | [ ] |
 
 ### P4. Error y costo
 
-*¿Qué pasó la última vez que se equivocó en el precio o en la tasa esperada y cuánto le costó?*
+*¿Qué pasó la última vez que se equivocó en una deducción o en un tipo de cambio y cuánto le costó?*
 
 | | |
 |---|---|
@@ -78,9 +79,9 @@
 | **Costo del error** | [$ o descripción] |
 | **Qué habría hecho distinto** | [ ] |
 
-### P5. Uso y valor de un pronóstico
+### P5. Uso y valor de una herramienta
 
-*Si le diéramos un pronóstico mensual de precios de vivienda para su zona, ¿cómo lo usaría y cuánto estaría dispuesto a pagar por él?*
+*Si una herramienta le diera el total deducible ya auditado y un pronóstico del tipo de cambio, ¿cómo la usaría y cuánto estaría dispuesto a pagar por ella?*
 
 | | |
 |---|---|
@@ -96,8 +97,7 @@
 
 | Pregunta | Respuesta |
 |---|---|
-| Comparaciones entre ciudades o estados útiles | [ ] |
-| Sensibilidad del cliente a +1 punto en la tasa hipotecaria | [ ] |
+| Comparaciones entre tipos de cliente que le serían útiles | [ ] |
 | Dato que hoy no existe y le gustaría tener | [ ] |
 
 ### Cierre
@@ -131,7 +131,7 @@
 ### Ajustes derivados
 
 - **Pregunta detonadora:** [se mantiene / nueva redacción]
-- **Factores para E2 (experimentos):** [tipo de vivienda, rango de tasa, trimestre, u otros según lo dicho]
+- **Factores para E2 (parámetros del sistema):** [modo de tipo de cambio, notas de crédito, IVA por defecto, tope de efectivo, u otros según lo dicho]
 - **Horizonte de pronóstico para E1:** [ ]
 
 ---

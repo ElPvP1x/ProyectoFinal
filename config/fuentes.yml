@@ -1,15 +1,20 @@
 # Fuentes del observatorio (capa Bronce). Agregar/quitar aqui, no en el codigo.
+# IDs marcados "VERIFICAR": confirmarlos en el catalogo antes de correr (el extractor avisa si una serie viene vacia).
 fuentes:
   - id: banxico_sie
     tipo: api
     url_base: https://www.banxico.org.mx/SieAPIRest/service/v1/series
-    token_env: BANXICO_TOKEN        # secreto de GitHub Actions
-    desde: "2010-01-01"             # >= 36 periodos mensuales de sobra
+    token_env: BANXICO_TOKEN          # secreto de GitHub Actions
+    desde: "2010-01-01"               # >= 36 periodos mensuales de sobra
     series:
-      - {id: SP1, nombre: inpc_general_mensual}
-      # TODO: agregar series de vivienda de Banxico SIE (indice de precios de vivienda, INPC vivienda, tasas hipotecarias); confirmar IDs en el catalogo SIE
+      - {id: SF43718, nombre: tipo_cambio_fix_usd_mxn_diario}   # FIX, lo usa el Sistema Contable para convertir CFDI en USD
+      - {id: SP1, nombre: inpc_general_mensual}                 # ya capturada desde E0
+      - {id: SF43783, nombre: tiie_28_dias_diaria}              # VERIFICAR id en el catalogo SIE
+      - {id: SP68257, nombre: valor_udis_diario}                # VERIFICAR id en el catalogo SIE
   - id: inegi_bie
     tipo: api
-    # TODO: indicadores de INPC "Vivienda" por ciudad/entidad del BIE de INEGI
-    # url ejemplo: https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/INDICATOR/{id}/es/0700/false/BIE/2.0/{token}?type=json
-    activa: false
+    token_env: INEGI_TOKEN            # secreto de GitHub Actions; si falta, se omite con aviso
+    url_base: https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/INDICATOR
+    area: "0700"                      # 0700 = nacional
+    series:
+      - {id: "628194", nombre: inpc_general_inegi_mensual}      # VERIFICAR id en el BIE
