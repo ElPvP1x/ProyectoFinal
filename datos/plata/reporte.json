@@ -1,0 +1,169 @@
+{
+  "registros_bronce": 14852,
+  "validos": 14852,
+  "cuarentena": 0,
+  "pct_cuarentena": 0.0,
+  "motivos": {},
+  "series": {
+    "inpc_general_mensual": {
+      "faltantes": {
+        "n": 202,
+        "faltantes": 0,
+        "pct": 0.0,
+        "p_mes": null,
+        "p_nivel_previo": null,
+        "p_volatilidad_previa": null,
+        "mecanismo": "sin huecos suficientes para probar (practicamente completa)"
+      },
+      "imputacion_evaluada": [
+        {
+          "metodo": "interpolacion_lineal",
+          "MAE": 0.13184,
+          "RMSE": 0.15664
+        },
+        {
+          "metodo": "ultimo_valor (ffill)",
+          "MAE": 0.40214,
+          "RMSE": 0.53147
+        },
+        {
+          "metodo": "media_global",
+          "MAE": 20.26208,
+          "RMSE": 23.23153
+        }
+      ],
+      "metodo_imputacion": "no aplica",
+      "atipicos": {
+        "atipico_iqr": 6,
+        "atipico_zrobusto": 3,
+        "atipico_iforest": 2,
+        "consenso_2_o_mas": 3
+      },
+      "limites_iqr": [
+        -0.004204287800234852,
+        0.011704642906785523
+      ],
+      "registros": 202
+    },
+    "tiie_28_dias_diaria": {
+      "faltantes": {
+        "n": 4400,
+        "faltantes": 157,
+        "pct": 3.568,
+        "p_mes": 4.6365827406026174e-18,
+        "p_nivel_previo": 0.7658634661791176,
+        "p_volatilidad_previa": 0.07696495775704082,
+        "mecanismo": "MAR (depende de: mes)"
+      },
+      "imputacion_evaluada": [
+        {
+          "metodo": "interpolacion_lineal",
+          "MAE": 0.00858,
+          "RMSE": 0.02411
+        },
+        {
+          "metodo": "ultimo_valor (ffill)",
+          "MAE": 0.0154,
+          "RMSE": 0.05861
+        },
+        {
+          "metodo": "media_global",
+          "MAE": 2.09999,
+          "RMSE": 2.49123
+        }
+      ],
+      "metodo_imputacion": "interpolacion_lineal",
+      "atipicos": {
+        "atipico_iqr": 604,
+        "atipico_zrobusto": 417,
+        "atipico_iforest": 44,
+        "consenso_2_o_mas": 417
+      },
+      "limites_iqr": [
+        -0.002563297363252892,
+        0.0026469034050219387
+      ],
+      "registros": 4243
+    },
+    "tipo_cambio_fix_usd_mxn_diario": {
+      "faltantes": {
+        "n": 4400,
+        "faltantes": 157,
+        "pct": 3.568,
+        "p_mes": 4.6365827406026174e-18,
+        "p_nivel_previo": 0.7818602845507039,
+        "p_volatilidad_previa": 0.09679742297850459,
+        "mecanismo": "MAR (depende de: mes)"
+      },
+      "imputacion_evaluada": [
+        {
+          "metodo": "interpolacion_lineal",
+          "MAE": 0.06515,
+          "RMSE": 0.09175
+        },
+        {
+          "metodo": "ultimo_valor (ffill)",
+          "MAE": 0.08759,
+          "RMSE": 0.12954
+        },
+        {
+          "metodo": "media_global",
+          "MAE": 2.63161,
+          "RMSE": 3.08247
+        }
+      ],
+      "metodo_imputacion": "interpolacion_lineal",
+      "atipicos": {
+        "atipico_iqr": 190,
+        "atipico_zrobusto": 85,
+        "atipico_iforest": 44,
+        "consenso_2_o_mas": 85
+      },
+      "limites_iqr": [
+        -0.014459348300056796,
+        0.01413941872373048
+      ],
+      "registros": 4243
+    },
+    "valor_udis_diario": {
+      "faltantes": {
+        "n": 6164,
+        "faltantes": 0,
+        "pct": 0.0,
+        "p_mes": null,
+        "p_nivel_previo": null,
+        "p_volatilidad_previa": null,
+        "mecanismo": "sin huecos suficientes para probar (practicamente completa)"
+      },
+      "imputacion_evaluada": [
+        {
+          "metodo": "interpolacion_lineal",
+          "MAE": 2e-05,
+          "RMSE": 0.00012
+        },
+        {
+          "metodo": "ultimo_valor (ffill)",
+          "MAE": 0.001,
+          "RMSE": 0.00131
+        },
+        {
+          "metodo": "media_global",
+          "MAE": 1.08743,
+          "RMSE": 1.28661
+        }
+      ],
+      "metodo_imputacion": "no aplica",
+      "atipicos": {
+        "atipico_iqr": 246,
+        "atipico_zrobusto": 92,
+        "atipico_iforest": 62,
+        "consenso_2_o_mas": 92
+      },
+      "limites_iqr": [
+        -0.00024229626324207,
+        0.00048338610490444855
+      ],
+      "registros": 6164
+    }
+  }
+}

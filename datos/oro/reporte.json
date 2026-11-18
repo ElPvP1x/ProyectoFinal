@@ -1,0 +1,95 @@
+{
+  "meses_integrados": 203,
+  "meses_completos": 190,
+  "meses_parciales": [
+    "2010-01",
+    "2010-02",
+    "2010-03",
+    "2010-04",
+    "2010-05",
+    "2010-06",
+    "2010-07",
+    "2010-08",
+    "2010-09",
+    "2010-10",
+    "2010-11",
+    "2010-12",
+    "2026-11"
+  ],
+  "variables_candidatas": [
+    "fix_prom",
+    "fix_cierre",
+    "fix_std",
+    "tiie_prom",
+    "tiie_cierre",
+    "udis_prom",
+    "udis_cierre",
+    "inpc",
+    "fix_var_mensual",
+    "inflacion_anual",
+    "tasa_real"
+  ],
+  "variables_conservadas": [
+    "fix_prom",
+    "tiie_prom",
+    "inpc",
+    "inflacion_anual",
+    "fix_std",
+    "fix_var_mensual",
+    "tasa_real"
+  ],
+  "variables_descartadas": {
+    "fix_cierre": "|r|=0.995 con fix_prom",
+    "tiie_cierre": "|r|=0.999 con tiie_prom",
+    "udis_prom": "|r|=1.000 con inpc",
+    "udis_cierre": "|r|=1.000 con inpc"
+  },
+  "parametros_normalizacion": {
+    "fix_prom": {
+      "min": 11.653295454545455,
+      "max": 24.240541818181818,
+      "media": 17.393542294076596,
+      "desv": 2.9800321856604355
+    },
+    "tiie_prom": {
+      "min": 3.286955,
+      "max": 11.536089130434783,
+      "media": 6.553822917863581,
+      "desv": 2.5316553352471867
+    },
+    "inpc": {
+      "min": 75.155508,
+      "max": 147.026,
+      "media": 105.4509621969327,
+      "desv": 21.928584619892728
+    },
+    "inflacion_anual": {
+      "min": 2.130812764144596,
+      "max": 8.699749565885107,
+      "media": 4.400483886851943,
+      "desv": 1.4374393814794235
+    },
+    "fix_std": {
+      "min": 0.04171483691742745,
+      "max": 1.8947077713277365,
+      "media": 0.21572754515659115,
+      "desv": 0.17089276309658868
+    },
+    "fix_var_mensual": {
+      "min": -6.371812414702194,
+      "max": 18.883694077489753,
+      "media": 0.2503714417816894,
+      "desv": 2.9108728049126653
+    },
+    "tasa_real": {
+      "min": -2.253285121628582,
+      "max": 7.246367639016667,
+      "media": 2.1533390310116394,
+      "desv": 2.3534869451570937
+    }
+  },
+  "cortes_fix_terciles": [
+    16.976643478260872,
+    19.151481818181818
+  ]
+}

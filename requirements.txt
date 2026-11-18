@@ -1,2 +1,10 @@
 requests>=2.31
 pyyaml>=6.0
+pandas>=3.0,<4
+numpy>=2.0
+scipy>=1.13
+scikit-learn>=1.5
+pandera>=0.30
+# cuaderno docs/E1/limpieza.ipynb
+matplotlib>=3.8
+nbformat>=5.10
