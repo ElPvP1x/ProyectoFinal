@@ -103,3 +103,44 @@ def test_union_espacial_punto_en_poligono():
     res = geo.resumir(r, entidades, lin, lin).set_index("entidad")
     assert res.loc["Sur", "banco"] == 1 and res.loc["Sur", "despacho_contable"] == 1
     assert res["archivo_bronce_puntos"].notna().all()
+
+
+# --- DENUE (segunda fuente geoespacial) ---
+def _denue_falso(tmp_path):
+    import zipfile
+    import denue
+    cols = ["id", "clee", "nom_estab", "raz_social", "codigo_act", "nombre_act", "per_ocu", "nom_vial", "numero_ext",
+            "cve_ent", "entidad", "cve_mun", "municipio", "telefono", "correoelec", "www", "latitud", "longitud", "fecha_alta"]
+    filas = [
+        ["1", "x", "JUAN PEREZ CONTADOR", "", "541211", "Contabilidad", "0 a 5 personas", "HIDALGO", "10",
+         "06", "Colima", "002", "Colima", "3120000000", "juan@correo.mx", "", "19.24", "-103.72", "2019-11"],
+        ["2", "x", "DESPACHO SA", "DESPACHO SA DE CV", "541219", "Otros", "11 a 30 personas", "JUAREZ", "5",
+         "06", "Colima", "002", "Colima", "", "", "", "19.25", "-103.73", "2020-01"],
+        ["3", "x", "ABOGADOS", "", "541110", "Bufetes", "0 a 5 personas", "", "", "06", "Colima", "002", "Colima",
+         "", "", "", "19.25", "-103.73", "2020-01"],                     # no es contabilidad: se filtra
+        ["4", "x", "SIN COORDENADAS", "", "541211", "Contabilidad", "0 a 5 personas", "", "", "06", "Colima", "002",
+         "Colima", "", "", "", "", "", "2020-01"],                       # va a cuarentena
+    ]
+    texto = ",".join(cols) + "\n" + "\n".join(",".join(f) for f in filas) + "\n"
+    ruta = tmp_path / "denue.zip"
+    with zipfile.ZipFile(ruta, "w") as z:
+        z.writestr("conjunto_de_datos/denue_inegi_54_.csv", texto.encode("latin-1"))
+    return denue, ruta
+
+
+def test_denue_sin_datos_personales_y_con_cuarentena(tmp_path):
+    denue, ruta = _denue_falso(tmp_path)
+    ficha = {"fuente": "inegi_denue", "serie": "x", "archivo_bronce": "d.zip", "sha256_bronce": "h", "fecha_ingesta": "f"}
+    validos, cuarentena = denue.leer(ruta, ficha)
+    assert len(validos) == 2 and len(cuarentena) == 1          # el bufete de abogados no entra
+    assert "sin_coordenadas" in cuarentena["motivo"].iloc[0]
+    for campo in denue.PERSONALES:
+        assert campo not in validos.columns and campo not in cuarentena.columns
+    assert validos["de_11_o_mas"].tolist() == [False, True]
+    assert {"archivo_bronce", "sha256_bronce", "fecha_ingesta"} <= set(validos.columns)
+
+
+def test_denue_concordancia_de_entidad():
+    import denue
+    pts = pd.DataFrame({"cve_ent": ["06", "09", "15"], "clave_iso": ["MX-COL", "MX-CMX", "MX-JAL"]})
+    assert denue.concordancia(pts) == pytest.approx(66.67)

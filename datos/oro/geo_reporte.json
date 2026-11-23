@@ -16,6 +16,9 @@
   },
   "entidades": 32,
   "entidades_sin_despachos": 5,
+  "denue": {
+    "capturado": false
+  },
   "linaje": {
     "puntos": {
       "fuente": "osm_overpass",
@@ -30,6 +33,7 @@
       "archivo_bronce": "datos/bronce/geoboundaries/entidades_mx_adm1/20261123T144743Z.json",
       "sha256_bronce": "c535c8f8ffeacd1905178c27577f25c83cb4a155b5d7e6dbe910a76e7d2d9896",
       "fecha_ingesta": "2026-11-23T14:47:43Z"
-    }
+    },
+    "denue": null
   }
 }

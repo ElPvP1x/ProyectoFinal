@@ -1,1 +1,12 @@
 fecha,id,fase_origen,fase_detectado,tipo,descripcion,min_correccion
+2026-11-23,E2-01,Diseno,Pruebas,Interfaz,Overpass respondio 502 (servidor saturado) y el extractor no reintentaba,15
+2026-11-23,E2-02,Diseno,Pruebas,Datos,government=tax clasificaba recaudadoras municipales como oficinas del SAT,10
+2026-11-23,E2-03,Codificacion,Pruebas,Sintaxis,La regex del SAT perdio el \b al escribirse desde la terminal (12 registros a cuarentena),10
+2026-11-23,E2-04,Codificacion,Pruebas,Funcion,El linaje mensual leia geo_puntos.csv como serie de tiempo,5
+2026-11-23,E2-05,Codificacion,Revision,Funcion,verificar_bronce.py fallaba con carpetas geoespaciales sin periodos,5
+2026-11-23,E2-06,Codificacion,Revision,Presentacion,El mapa perdia la leyenda de la escala de color,10
+2026-11-23,E2-07,Diseno,Revision,Entorno,Git convertia fines de linea de los JSON de Bronce y rompia el hash,15
+2026-11-23,E2-08,Diseno,Revision,Datos,OSM solo tenia 83 despachos: fuente insuficiente para el sector,50
+2026-11-23,E2-09,Codificacion,Revision,Funcion,Columna entidad del DENUE chocaba con la de la union espacial,5
+2026-11-23,E2-10,Diseno,Pruebas,Datos,geoBoundaries asigna MX-MEX a la Ciudad de Mexico,10
+2026-11-23,E2-11,Codificacion,Revision,Presentacion,Entidades con 0 % de cobertura sin borde en el mapa,5

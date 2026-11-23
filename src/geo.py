@@ -12,7 +12,7 @@ correos y direcciones se descartan al leer Bronce, y el producto final está agr
 import json, pathlib, re
 import geopandas as gpd
 import pandas as pd
-import linaje
+import denue, linaje
 
 RAIZ = pathlib.Path(__file__).resolve().parents[1]
 CRS_MX = "EPSG:6372"  # Mexico ITRF2008 / LCC: áreas en metros
@@ -35,8 +35,8 @@ def categoria(tags: dict) -> str | None:
     return None
 
 
-def _ultima(raiz, fuente, serie):
-    snaps = sorted((raiz / "datos" / "bronce" / fuente / serie).glob("*.json"))
+def _ultima(raiz, fuente, serie, patron="*.json"):
+    snaps = sorted((raiz / "datos" / "bronce" / fuente / serie).glob(patron))
     if not snaps:
         raise FileNotFoundError(f"no hay captura de {fuente}/{serie}: correr src/extractor_geo.py")
     return snaps[-1]
@@ -67,6 +67,7 @@ def leer_entidades(ruta: pathlib.Path) -> gpd.GeoDataFrame:
     g = gpd.read_file(ruta)[["shapeName", "shapeISO", "geometry"]]
     g = g.rename(columns={"shapeName": "entidad", "shapeISO": "clave_iso"})
     g["entidad"] = g["entidad"].replace({"Distrito Federal": "Ciudad de México"})  # nombre oficial desde 2016
+    g.loc[g["entidad"] == "Ciudad de México", "clave_iso"] = "MX-CMX"  # geoBoundaries le pone MX-MEX, igual que al Edomex
     return g.set_crs("EPSG:4326", allow_override=True)
 
 
@@ -140,6 +141,44 @@ def mapa(ent: gpd.GeoDataFrame, puntos: gpd.GeoDataFrame, ruta: pathlib.Path):
     plt.close(fig)
 
 
+def _denue(raiz, entidades, ent, lin_e, dp, do, dq, con_mapa) -> dict:
+    """Segunda fuente: DENUE. Si aun no hay captura (la baja GitHub Actions), se omite con aviso."""
+    try:
+        r = _ultima(raiz, "inegi_denue", "denue_sector54", "*.zip")
+    except FileNotFoundError as e:
+        print("AVISO denue:", e)
+        return {"capturado": False}
+    lin_d = linaje.ficha_archivo(raiz, r)
+    validos, cuarentena = denue.leer(r, lin_d)
+    pts = asignar_entidad(validos, entidades).rename(columns={"entidad": "entidad_geo"})
+    pts = pts.rename(columns={"entidad_denue": "entidad"}) if "entidad_denue" in pts else pts
+    pts.drop(columns="geometry").to_csv(dp / "geo_denue_contables.csv", index=False, encoding="utf-8")
+    cuarentena.to_csv(dq / "geo_denue_cuarentena.csv", index=False, encoding="utf-8")
+    municipios = denue.por_municipio(pts, lin_d, lin_e)
+    municipios.to_csv(do / "geo_municipios.csv", index=False, encoding="utf-8")
+    conteo = denue.por_entidad(pts[pts["entidad_geo"].notna()])
+    for c in conteo.columns:
+        ent[c] = ent["entidad"].map(conteo[c]).fillna(0).astype(int)
+    ent["denue_por_1000km2"] = 1000 * ent["denue_contables"] / ent["area_km2"]
+    ent["pct_nacional_denue"] = 100 * ent["denue_contables"] / max(ent["denue_contables"].sum(), 1)
+    osm = ent["despacho_contable"] + ent["asesor_fiscal"]
+    ent["cobertura_osm_pct"] = (100 * osm / ent["denue_contables"].where(ent["denue_contables"] > 0)).round(2)
+    ent["archivo_bronce_denue"], ent["sha256_bronce_denue"] = lin_d["archivo_bronce"], lin_d["sha256_bronce"]
+    ent["fecha_ingesta"] = ent["fecha_ingesta"].where(ent["fecha_ingesta"] > lin_d["fecha_ingesta"], lin_d["fecha_ingesta"])
+    ent.drop(columns="geometry").to_csv(do / "geo_entidades.csv", index=False, encoding="utf-8")
+    if con_mapa:
+        denue.mapa(ent, raiz / "docs" / "E2" / "mapa_despachos_denue.png", lin_d["fecha_ingesta"])
+    return {"capturado": True, "registros": int(len(validos) + len(cuarentena)), "validos": int(len(validos)),
+            "cuarentena": int(len(cuarentena)),
+            "por_clase": pts["clase"].value_counts().to_dict(),
+            "de_11_o_mas_personas": int(pts["de_11_o_mas"].sum()),
+            "concordancia_entidad_pct": denue.concordancia(pts),
+            "asignacion": pts["asignacion"].value_counts().to_dict(),
+            "osm_entre_denue_pct": round(100 * float(osm.sum()) / max(int(ent["denue_contables"].sum()), 1), 2),
+            "municipios_con_despachos": int(len(municipios)),
+            "linaje": lin_d}
+
+
 def ejecutar(raiz=RAIZ, con_mapa=True) -> dict:
     r_pts = _ultima(raiz, "osm_overpass", "infraestructura_contable_mx")
     r_ent = _ultima(raiz, "geoboundaries", "entidades_mx_adm1")
@@ -157,13 +196,15 @@ def ejecutar(raiz=RAIZ, con_mapa=True) -> dict:
     ent.drop(columns="geometry").to_csv(do / "geo_entidades.csv", index=False, encoding="utf-8")
     if con_mapa:
         mapa(ent, puntos[puntos["entidad"].notna()], raiz / "docs" / "E2" / "mapa_infraestructura.png")
+    rep_denue = _denue(raiz, entidades, ent, lin_e, dp, do, dq, con_mapa)
     rep = {"elementos_bronce": int(len(validos) + len(cuarentena)), "validos": int(len(validos)),
            "cuarentena": int(len(cuarentena)),
            "motivos_cuarentena": cuarentena["motivo"].value_counts().to_dict() if len(cuarentena) else {},
            "por_categoria": puntos["categoria"].value_counts().to_dict(),
            "asignacion": puntos["asignacion"].value_counts().to_dict(),
            "entidades": int(len(ent)), "entidades_sin_despachos": int((ent["contables_y_fiscales"] == 0).sum()),
-           "linaje": {"puntos": lin_p, "entidades": lin_e}}
+           "denue": rep_denue,
+           "linaje": {"puntos": lin_p, "entidades": lin_e, "denue": rep_denue.get("linaje")}}
     (do / "geo_reporte.json").write_text(json.dumps(rep, indent=2, ensure_ascii=False), encoding="utf-8")
     return rep
 

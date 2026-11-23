@@ -1,1 +1,10 @@
 fecha,fase,actividad,inicio,fin,interrupcion_min,minutos_netos
+2026-11-23,Planeacion,E2: revisar instrucciones y estado del repositorio,08:00,08:30,0,30
+2026-11-23,Diseno,E2: elegir fuente geoespacial y revisar licencias y robots.txt,08:30,08:50,0,20
+2026-11-23,Codificacion,E2: extractor geoespacial OSM y geoBoundaries,08:50,09:20,5,25
+2026-11-23,Codificacion,E2: linaje en Plata y Oro y src/linaje.py,09:20,10:10,0,50
+2026-11-23,Codificacion,E2: procesamiento con GeoPandas y mapa,10:10,11:00,0,50
+2026-11-23,Pruebas,E2: pruebas de linaje y geoespacial; correccion de defectos,11:00,11:40,0,40
+2026-11-23,Postmortem,E2: etica-datos.md; ficha de entrega y relatoria,11:40,12:30,0,50
+2026-11-23,Codificacion,E2: integrar DENUE como segunda fuente,12:50,13:40,0,50
+2026-11-23,Pruebas,E2: pruebas del DENUE y revision de mapas,13:40,14:00,0,20

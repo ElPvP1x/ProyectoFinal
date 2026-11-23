@@ -70,6 +70,28 @@ def geoboundaries(f) -> int:
         return 1
 
 
+def denue(f) -> int:
+    """Descarga masiva del DENUE (sector 54). Se guarda el zip tal cual llega."""
+    import datetime as dt, io, zipfile
+    carpeta = RAIZ / "datos" / "bronce" / f["id"] / f["serie"]
+    previas = sorted(carpeta.glob("*.zip"))
+    if previas and not f.get("forzar", False):
+        edad = dt.datetime.now(dt.timezone.utc) - dt.datetime.strptime(previas[-1].stem, "%Y%m%dT%H%M%SZ").replace(tzinfo=dt.timezone.utc)
+        if edad.days < f.get("vigencia_dias", 90):
+            print(f"denue ({f['serie']}): captura de hace {edad.days} dias, vigente; se omite")
+            return 0
+    try:
+        r = _pedir("GET", f["url_base"])
+        nombres = zipfile.ZipFile(io.BytesIO(r.content)).namelist()
+        if not any(n.startswith("conjunto_de_datos/") and n.endswith(".csv") for n in nombres):
+            raise ValueError(f"el zip no trae el conjunto de datos: {nombres}")
+        print(f"denue ({f['serie']}): {len(r.content):,} bytes ->", guardar(f["id"], f["serie"], r.content, ext="zip").name)
+        return 0
+    except Exception as e:
+        print(f"ERROR denue: {e}", file=sys.stderr)
+        return 1
+
+
 def main():
     cfg = yaml.safe_load(open(RAIZ / "config" / "fuentes.yml", encoding="utf-8"))
     fallos = 0
@@ -80,6 +102,8 @@ def main():
             fallos += overpass(f)
         elif f["id"] == "geoboundaries":
             fallos += geoboundaries(f)
+        elif f["id"] == "inegi_denue":
+            fallos += denue(f)
     sys.exit(1 if fallos else 0)
 
 

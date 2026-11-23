@@ -17,9 +17,9 @@ jobs:
         env:
           BANXICO_TOKEN: ${{ secrets.BANXICO_TOKEN }}
           INEGI_TOKEN: ${{ secrets.INEGI_TOKEN }}
-      - name: Captura geoespacial (OSM y geoBoundaries)
+      - name: Captura geoespacial (OSM, geoBoundaries y DENUE del INEGI)
         run: python src/extractor_geo.py
-        continue-on-error: true   # si Overpass esta saturado se usa la captura anterior
+        continue-on-error: true   # si una fuente falla se usa su captura anterior
       - run: python src/verificar_bronce.py
       - name: Bronce a Plata y Oro (puerta de calidad)
         run: python src/pipeline.py
@@ -30,6 +30,6 @@ jobs:
         run: |
           git config user.name "bot-captura"
           git config user.email "bot@users.noreply.github.com"
-          git add datos/ docs/E2/mapa_infraestructura.png
+          git add datos/ docs/E2/*.png
           git diff --cached --quiet || git commit -m "captura bronce $(date -u +%F)"
           git push

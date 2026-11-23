@@ -6,11 +6,11 @@ UA = "ObservatorioContabilidad-Academico/0.1 (proyecto escolar; contacto en el R
 RAIZ = pathlib.Path(__file__).resolve().parents[1]
 PAUSA = 2  # segundos entre consultas: cortesia, no saturar el servidor
 
-def guardar(fuente, serie, contenido: bytes):
+def guardar(fuente, serie, contenido: bytes, ext="json"):
     ahora = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     carpeta = RAIZ / "datos" / "bronce" / fuente / serie
     carpeta.mkdir(parents=True, exist_ok=True)
-    ruta = carpeta / f"{ahora}.json"
+    ruta = carpeta / f"{ahora}.{ext}"
     ruta.write_bytes(contenido)
     h = hashlib.sha256(contenido).hexdigest()
     with open(RAIZ / "datos" / "bronce" / "manifiesto.csv", "a", encoding="utf-8") as m:

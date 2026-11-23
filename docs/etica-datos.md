@@ -11,6 +11,7 @@ Este documento explica con qué permiso usamos cada fuente, qué reglas respetam
 | Banco de México, SIE API | FIX, TIIE 28 días, UDIS, INPC | API REST con token personal (`BANXICO_TOKEN`) | Términos de uso del SIE API: la información es pública y se usa citando a Banco de México como fuente; el token es personal y no se comparte | "Fuente: Banco de México, Sistema de Información Económica" |
 | INEGI, Banco de Indicadores (BIE) | INPC (para contrastar con Banxico) | API con token (`INEGI_TOKEN`); hoy sin captura porque falta el token | Términos de libre uso de la información del INEGI: se permite usar, copiar y redistribuir citando al INEGI | "Fuente: INEGI, Banco de Indicadores" |
 | OpenStreetMap vía Overpass API (E2) | Ubicación y categoría de despachos contables, asesores fiscales, oficinas del SAT y bancos | API pública sin token, `overpass-api.de` | Open Database License (ODbL 1.0) | "© colaboradores de OpenStreetMap" en el mapa y en los CSV derivados |
+| INEGI, DENUE, descarga masiva del sector 54 (E2) | Establecimientos de las clases SCIAN 541211 y 541219 (contabilidad): clase, tamaño, entidad, municipio y coordenadas | Archivo zip público, sin token; lo descarga GitHub Actions como máximo cada 90 días | Términos de Libre Uso de la Información del INEGI (declarado en los metadatos del propio zip) | "Fuente: INEGI, DENUE" |
 | geoBoundaries, gbOpen MEX ADM1 (E2) | Polígonos de las 32 entidades | API pública sin token; archivo en GitHub | CC BY 3.0 IGO; los límites provienen del Marco Geoestadístico del INEGI | "Límites: geoBoundaries / INEGI" |
 
 La licencia de geoBoundaries se tomó del campo `boundaryLicense` de su propia API y queda guardada en el log del extractor. Las demás se verificaron en los portales de cada institución al iniciar el proyecto; si cambian, se actualiza esta tabla.
@@ -23,6 +24,7 @@ Revisado el 23 de noviembre de 2026 con el mismo User-Agent que usan los extract
 |---|---|---|---|
 | `www.banxico.org.mx` | `Disallow: /dyn/` y `/ALEPH` | `/SieAPIRest/service/v1/series` | Permitida: la ruta de la API no está restringida |
 | `www.inegi.org.mx` | `Allow: /app` (y otras secciones) | `/app/api/indicadores/...` | Permitida explícitamente |
+| `www.inegi.org.mx` (descarga masiva) | No hay `Disallow` para `/contenidos/`; las secciones hermanas están en `Allow` | `/contenidos/masiva/denue/denue_00_54_csv.zip` | Permitida; un solo archivo de 11 MB, como máximo una vez cada 90 días |
 | `www.geoboundaries.org` | `Crawl-delay: 10`; sólo bloquea rutas administrativas | `/api/current/gbOpen/MEX/ADM1/` | Permitida; hacemos una sola petición y sólo cuando no hay captura previa |
 | `overpass-api.de` | `Disallow: /api/` para todo agente | `/api/interpreter` | **Restringida para rastreadores.** Ver abajo |
 | `github.com` | `Crawl-delay: 1` | descarga directa del GeoJSON | Una descarga, sólo la primera vez |
@@ -34,13 +36,14 @@ Revisado el 23 de noviembre de 2026 con el mismo User-Agent que usan los extract
 - Reintentos con espera creciente (30, 60, 120 y 240 s) cuando el servidor responde 429, 502, 503 o 504, como pide el propio mensaje de error.
 - Si la consulta falla, el pipeline usa la captura anterior en lugar de insistir.
 
-En la prueba del 23 de noviembre el servidor respondió que estaba saturado y recomendó instalar una instancia propia para uso automatizado. Si el proyecto creciera a consultas diarias, migraríamos a un extracto de Geofabrik procesado localmente o al DENUE del INEGI, que además tiene mejor cobertura (ver sección 3).
+En la prueba del 23 de noviembre el servidor respondió que estaba saturado y recomendó instalar una instancia propia para uso automatizado. Si el proyecto creciera a consultas diarias, migraríamos a un extracto de Geofabrik procesado localmente. Para los despachos contables ya usamos el DENUE (ver sección 3).
 
 ## 3. Sesgos y cómo los mitigamos
 
 | Sesgo | Dónde aparece | Mitigación |
 |---|---|---|
-| **Cobertura desigual de OpenStreetMap** | OSM depende de voluntarios. Hay muchos más despachos contables reales que los registrados, y la cobertura es mejor en ciudades grandes | No se presentan los conteos como "número de despachos en México", sino como "registrados en OSM". El mapa usa bancos (mejor cubiertos) como capa principal y los despachos como puntos. Se documenta el DENUE como referencia oficial para comparar |
+| **Cobertura desigual de OpenStreetMap** | OSM depende de voluntarios. Tiene 88 despachos y asesores fiscales, el 0.52 % de los 16,936 establecimientos de contabilidad del DENUE; en 16 entidades la cobertura es 0 % | Por eso se agregó el DENUE como fuente principal de despachos. OSM se conserva para bancos, oficinas del SAT y recaudadoras, que el DENUE no clasifica igual, y su cobertura frente al DENUE se publica por entidad (`cobertura_osm_pct`) |
+| **Actualización desigual del DENUE** | Según sus metadatos, el DENUE se actualiza "fundamentalmente en el segmento de los establecimientos grandes"; un despacho pequeño que cerró puede seguir apareciendo | Se reporta aparte cuántos tienen 11 o más personas ocupadas (`denue_contables_11_o_mas`) y se guarda `fecha_alta` en Plata |
 | **Tamaño de la entidad** | Los conteos brutos favorecen a los estados grandes | Se reporta densidad por 1,000 km² y porcentaje nacional, no sólo totales |
 | **Etiquetado inconsistente** | Una oficina del SAT puede estar como `government=tax` o sólo con el nombre | La categoría se asigna con reglas explícitas en `geo.categoria()`, y lo que no encaja va a cuarentena con motivo, no se descarta en silencio |
 | **Polígonos simplificados** | Puntos en la costa pueden caer fuera del polígono | Se asignan a la entidad más cercana (máximo 5 km) y la columna `asignacion` lo indica |
@@ -50,7 +53,8 @@ En la prueba del 23 de noviembre el servidor respondió que estaba saturado y re
 ## 4. Privacidad
 
 - **Cero datos personales.** Las series de Banxico e INEGI son agregados macroeconómicos. De OpenStreetMap sólo se conservan el identificador del elemento, su tipo, la categoría y las coordenadas. El nombre, el teléfono, el correo, el sitio web y la dirección se descartan al leer Bronce; la prueba `test_geo_descarta_datos_personales_y_manda_a_cuarentena` lo verifica con un lote que sí trae nombre y teléfono.
-- **Agregación.** Un despacho contable puede ser el domicilio de una persona física. Por eso el producto de Oro (`geo_entidades.csv`) está agregado por entidad federativa y el mapa no lleva etiquetas.
+- **DENUE.** Muchos despachos contables son personas físicas: el DENUE trae su nombre, razón social, teléfono, correo y domicilio. `src/denue.py` lee el CSV con una lista blanca de columnas (`id`, clase, tamaño, entidad, municipio, coordenadas y fecha de alta), así que esos campos nunca llegan a Plata. La prueba `test_denue_sin_datos_personales_y_con_cuarentena` usa un lote con nombre, teléfono y correo y verifica que no pasan.
+- **Agregación.** Un despacho contable puede ser el domicilio de una persona física. Por eso los productos de Oro están agregados por entidad (`geo_entidades.csv`) o por municipio (`geo_municipios.csv`), y los mapas no llevan etiquetas.
 - **Bronce crudo.** La respuesta de Overpass se guarda tal cual llega para poder auditarla, y puede incluir el nombre de un negocio que el propio negocio publicó en OSM. Es información pública bajo ODbL, pero no se usa ni se propaga a Plata u Oro.
 - **CFDI del Sistema Contable.** Las facturas que procesa el Auditor de CFDI contienen RFC y montos de personas reales. **No forman parte de este repositorio** ni del observatorio; el Sistema Contable las procesa en local.
 - **Secretos.** Los tokens de Banxico e INEGI viven como secretos de GitHub Actions. El extractor nunca los imprime, ni siquiera en los mensajes de error.
