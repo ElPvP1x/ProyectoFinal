@@ -8,3 +8,7 @@ pandera>=0.30
 # cuaderno docs/E1/limpieza.ipynb
 matplotlib>=3.8
 nbformat>=5.10
+# E2: fuente geoespacial
+geopandas>=1.0
+shapely>=2.0
+mapclassify>=2.6

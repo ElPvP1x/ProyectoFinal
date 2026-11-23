@@ -43,6 +43,12 @@
         -0.004204287800234852,
         0.011704642906785523
       ],
+      "linaje": {
+        "fuente": "banxico_sie",
+        "archivo_bronce": "datos/bronce/banxico_sie/inpc_general_mensual/20261116T231052Z.json",
+        "sha256_bronce": "a138264687e1d2137206ce8b3803974252b64cfb661242eb99fee357311ebbc5",
+        "fecha_ingesta": "2026-11-16T23:10:52Z"
+      },
       "registros": 202
     },
     "tiie_28_dias_diaria": {
@@ -83,6 +89,12 @@
         -0.002563297363252892,
         0.0026469034050219387
       ],
+      "linaje": {
+        "fuente": "banxico_sie",
+        "archivo_bronce": "datos/bronce/banxico_sie/tiie_28_dias_diaria/20261116T231054Z.json",
+        "sha256_bronce": "727e043065efc153f6dad427b4682a7074903554cc1c0057fdb2fd99d4bdc6bd",
+        "fecha_ingesta": "2026-11-16T23:10:54Z"
+      },
       "registros": 4243
     },
     "tipo_cambio_fix_usd_mxn_diario": {
@@ -123,6 +135,12 @@
         -0.014459348300056796,
         0.01413941872373048
       ],
+      "linaje": {
+        "fuente": "banxico_sie",
+        "archivo_bronce": "datos/bronce/banxico_sie/tipo_cambio_fix_usd_mxn_diario/20261116T231050Z.json",
+        "sha256_bronce": "c6f6479f0f6cd7dbc3cb1e6c1f37b422516b7229125ad4b077a6df4b2dfa2524",
+        "fecha_ingesta": "2026-11-16T23:10:50Z"
+      },
       "registros": 4243
     },
     "valor_udis_diario": {
@@ -163,6 +181,12 @@
         -0.00024229626324207,
         0.00048338610490444855
       ],
+      "linaje": {
+        "fuente": "banxico_sie",
+        "archivo_bronce": "datos/bronce/banxico_sie/valor_udis_diario/20261116T231057Z.json",
+        "sha256_bronce": "3e6f70d1e32d7ea5380ef8443687ae592c3600d95b6d6c0050236a068b9f438f",
+        "fecha_ingesta": "2026-11-16T23:10:57Z"
+      },
       "registros": 6164
     }
   }

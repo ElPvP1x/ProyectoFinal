@@ -18,3 +18,20 @@ fuentes:
     area: "0700"                      # 0700 = nacional
     series:
       - {id: "628194", nombre: inpc_general_inegi_mensual}      # VERIFICAR id en el BIE
+  # --- E2: fuente especializada geoespacial (sin token, sin datos personales) ---
+  - id: osm_overpass
+    tipo: geoespacial
+    url_base: https://overpass-api.de/api/interpreter
+    licencia: "ODbL 1.0 (© colaboradores de OpenStreetMap)"
+    serie: infraestructura_contable_mx
+    pais: MX
+    filtros:                                   # una consulta por corrida
+      - '"office"~"^(accountant|tax_advisor)$"'  # despachos contables y asesores fiscales
+      - '"government"="tax"'                     # oficinas de recaudación
+      - '"name"~"Servicio de Administraci.n Tributaria|^SAT( |$)",i'
+      - '"amenity"="bank"'                       # bancos: conciliaciones y pagos de impuestos
+  - id: geoboundaries
+    tipo: geoespacial
+    url_base: https://www.geoboundaries.org/api/current/gbOpen/MEX/ADM1/
+    licencia: "CC BY 3.0 IGO (geoBoundaries, fuente INEGI)"
+    serie: entidades_mx_adm1

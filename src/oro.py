@@ -1,9 +1,10 @@
 """Plata -> Oro: integra las fuentes en una tabla mensual, normaliza, discretiza y reduce."""
 import json, pathlib
 import pandas as pd
-import limpieza
+import limpieza, linaje
 
 RAIZ = pathlib.Path(__file__).resolve().parents[1]
+LINAJE = ("fecha_ingesta", "archivos_bronce", "registros_bronce")
 PROTEGIDAS = ["fix_prom", "tiie_prom", "inpc", "inflacion_anual"]  # variables que E1/E2/E3 necesitan
 
 
@@ -40,15 +41,27 @@ def integrar(raiz=RAIZ) -> pd.DataFrame:
     return df
 
 
+def _linaje_por_mes(lin: pd.DataFrame) -> pd.DataFrame:
+    """Resumen de linaje por mes para pegarlo a cada fila de Oro."""
+    g = lin.groupby("mes")
+    return pd.DataFrame({"fecha_ingesta": g["fecha_ingesta"].max(),
+                         "archivos_bronce": g["archivo_bronce"].agg(lambda s: ";".join(sorted(set(s)))),
+                         "registros_bronce": g["registros_bronce"].sum()})
+
+
 def ejecutar(raiz=RAIZ) -> dict:
     df = integrar(raiz)
     do = raiz / "datos" / "oro"
     do.mkdir(parents=True, exist_ok=True)
+    lin = linaje.tabla_mensual(raiz)
+    lin.to_csv(do / "linaje.csv", index=False, encoding="utf-8")
+    por_mes = _linaje_por_mes(lin)
+    df = df.join(por_mes.set_axis(pd.PeriodIndex(por_mes.index, freq="M")))
     tabla = df.copy()
     tabla.index = tabla.index.astype(str)
     tabla.to_csv(do / "integrado_mensual.csv", encoding="utf-8")
     comp = df[df["mes_completo"]].copy()
-    excluidas = ("mes_completo", "fix_dias_imputados", "dif_inpc_banxico_inegi", "inpc_inegi")
+    excluidas = ("mes_completo", "fix_dias_imputados", "dif_inpc_banxico_inegi", "inpc_inegi") + LINAJE
     candidatas = [c for c in comp.columns if c not in excluidas]
     elegidas, descartadas = limpieza.seleccionar_variables(comp[candidatas].dropna(), PROTEGIDAS)
     oro = comp[elegidas].copy()
@@ -61,6 +74,8 @@ def ejecutar(raiz=RAIZ) -> dict:
     oro["tiie_nivel"] = limpieza.discretizar_umbrales(oro["tiie_prom"], [5, 8], ["baja", "media", "alta"])
     oro["inflacion_nivel"] = limpieza.discretizar_umbrales(oro["inflacion_anual"], [2, 4, 6],
                                                            ["<2%", "2-4% (meta Banxico)", "4-6%", ">6%"])
+    for c in LINAJE:   # trazabilidad: cada mes de Oro apunta a sus archivos de Bronce
+        oro[c] = comp[c]
     fechas = pd.Series(oro.index.to_timestamp(), index=oro.index)
     oro = pd.concat([limpieza.jerarquia_temporal(fechas).drop(columns="mes"), oro], axis=1)
     oro.index = oro.index.astype(str)
@@ -70,6 +85,8 @@ def ejecutar(raiz=RAIZ) -> dict:
            "meses_parciales": [str(i) for i in df.index[~df["mes_completo"]]],
            "variables_candidatas": candidatas, "variables_conservadas": elegidas, "variables_descartadas": descartadas,
            "parametros_normalizacion": params,
+           "linaje": {"archivo": "datos/oro/linaje.csv", "filas": int(len(lin)),
+                      "meses_sin_linaje": int(oro["archivos_bronce"].isna().sum())},
            "cortes_fix_terciles": [float(x) for x in oro["fix_prom"].quantile([1 / 3, 2 / 3])]}
     (do / "reporte.json").write_text(json.dumps(rep, indent=2, ensure_ascii=False), encoding="utf-8")
     return rep

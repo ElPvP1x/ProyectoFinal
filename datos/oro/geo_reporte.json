@@ -1,0 +1,35 @@
+{
+  "elementos_bronce": 5234,
+  "validos": 5234,
+  "cuarentena": 0,
+  "motivos_cuarentena": {},
+  "por_categoria": {
+    "banco": 5025,
+    "despacho_contable": 83,
+    "oficina_sat": 63,
+    "recaudacion_local": 58,
+    "asesor_fiscal": 5
+  },
+  "asignacion": {
+    "dentro": 5227,
+    "mas_cercana_5km": 7
+  },
+  "entidades": 32,
+  "entidades_sin_despachos": 5,
+  "linaje": {
+    "puntos": {
+      "fuente": "osm_overpass",
+      "serie": "infraestructura_contable_mx",
+      "archivo_bronce": "datos/bronce/osm_overpass/infraestructura_contable_mx/20261123T144742Z.json",
+      "sha256_bronce": "f6998a73391814972e64736c3534a60a56555e1e8cccabfc95fb42afa3373c44",
+      "fecha_ingesta": "2026-11-23T14:47:42Z"
+    },
+    "entidades": {
+      "fuente": "geoboundaries",
+      "serie": "entidades_mx_adm1",
+      "archivo_bronce": "datos/bronce/geoboundaries/entidades_mx_adm1/20261123T144743Z.json",
+      "sha256_bronce": "c535c8f8ffeacd1905178c27577f25c83cb4a155b5d7e6dbe910a76e7d2d9896",
+      "fecha_ingesta": "2026-11-23T14:47:43Z"
+    }
+  }
+}

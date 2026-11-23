@@ -15,10 +15,33 @@ CALENDARIO = {  # frecuencia esperada de cada serie
 }
 
 
+SERIES_TABULARES = ("banxico_sie", "inegi_bie")  # las geoespaciales tienen su propio flujo (geo.py)
+
+
+def procedencia(raiz=RAIZ) -> pd.DataFrame:
+    """Linaje de cada serie: que archivo de Bronce se uso, su hash y su fecha de ingesta.
+
+    El hash se recalcula sobre el archivo y se compara con datos/bronce/manifiesto.csv:
+    si no coincide, el archivo cambio despues de la captura y el pipeline se detiene.
+    """
+    import linaje
+    filas = []
+    for carpeta in sorted((raiz / "datos" / "bronce").glob("*/*")):
+        if not carpeta.is_dir() or carpeta.parent.name not in SERIES_TABULARES:
+            continue
+        snaps = sorted(carpeta.glob("*.json"))
+        if snaps:
+            filas.append(linaje.ficha_archivo(raiz, snaps[-1]))
+    cols = ["fuente", "serie", "archivo_bronce", "sha256_bronce", "fecha_ingesta"]
+    return pd.DataFrame(filas, columns=cols)
+
+
 def leer_bronce(raiz=RAIZ) -> pd.DataFrame:
     """Tabla larga con el TEXTO tal como llego mas campos parseados. Armoniza Banxico e INEGI."""
     partes = []
     for carpeta in sorted((raiz / "datos" / "bronce").glob("*/*")):
+        if carpeta.parent.name not in SERIES_TABULARES:
+            continue
         snaps = sorted(carpeta.glob("*.json")) if carpeta.is_dir() else []
         if not snaps:
             continue
@@ -73,8 +96,16 @@ def ejecutar(raiz=RAIZ, hoy=None) -> dict:
                "pct_cuarentena": round(100 * len(cuarentena) / max(len(bronce), 1), 4),
                "motivos": cuarentena["motivo"].str.split(" [", regex=False).str[0].value_counts().to_dict() if len(cuarentena) else {},
                "series": {}}
+    proc = procedencia(raiz).set_index("serie")
     for serie, df in validos.groupby("serie"):
         out, info = limpiar_serie(df, CALENDARIO[serie])
+        # Linaje por registro: de donde salio cada fila de Plata
+        p = proc.loc[serie]
+        out["origen"] = np.where(out["imputado"], "imputado (interpolacion)", "bronce")
+        out["fecha_ingesta"] = p["fecha_ingesta"]
+        out["archivo_bronce"] = p["archivo_bronce"]
+        out["sha256_bronce"] = p["sha256_bronce"]
+        info["linaje"] = p.to_dict()
         out.to_csv(dp / f"{serie}.csv", encoding="utf-8")
         info["registros"] = int(len(df))
         reporte["series"][serie] = info

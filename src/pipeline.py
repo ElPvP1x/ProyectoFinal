@@ -1,6 +1,6 @@
 """Flujo completo Bronce -> Plata -> Oro con puerta de calidad. Falla (exit 1) si la calidad no alcanza."""
 import sys
-import plata, oro
+import plata, oro, geo
 
 MAX_PCT_CUARENTENA = 5.0   # objetivo de calidad: no mas de 5 % de registros a cuarentena
 MIN_MESES = 36
@@ -18,6 +18,11 @@ def main() -> int:
     print(f"Oro: {o['meses_completos']} meses completos de {o['meses_integrados']}; variables: {', '.join(o['variables_conservadas'])}")
     if o["variables_descartadas"]:
         print("  descartadas:", o["variables_descartadas"])
+    try:   # E2: fuente geoespacial (OSM + geoBoundaries)
+        g = geo.ejecutar()
+        print(f"Geo: {g['validos']} puntos validos, {g['cuarentena']} en cuarentena; {g['entidades']} entidades; {g['por_categoria']}")
+    except FileNotFoundError as e:
+        print("AVISO geo:", e, file=sys.stderr)
     fallas = []
     if p["pct_cuarentena"] > MAX_PCT_CUARENTENA:
         fallas.append(f"cuarentena {p['pct_cuarentena']} % > {MAX_PCT_CUARENTENA} %")

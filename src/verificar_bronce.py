@@ -16,7 +16,7 @@ def meses(ruta):
 ok = True
 for carpeta in sorted((RAIZ / "datos" / "bronce").glob("*/*")):
     snaps = sorted(carpeta.glob("*.json"))
-    if not snaps:
+    if not snaps or carpeta.parent.name in ("osm_overpass", "geoboundaries"):  # geoespaciales: no son series de tiempo
         continue
     n = len(meses(snaps[-1]))
     estado = "OK" if n >= MINIMO else "FALTAN"
