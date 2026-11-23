@@ -1,0 +1,2 @@
+# Las capturas de Bronce se guardan byte por byte: su SHA-256 esta en datos/bronce/manifiesto.csv
+datos/bronce/*/**/*.json -text
