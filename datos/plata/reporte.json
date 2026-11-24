@@ -1,6 +1,6 @@
 {
-  "registros_bronce": 14852,
-  "validos": 14852,
+  "registros_bronce": 14871,
+  "validos": 14871,
   "cuarentena": 0,
   "pct_cuarentena": 0.0,
   "motivos": {},
@@ -47,87 +47,87 @@
     },
     "tiie_28_dias_diaria": {
       "faltantes": {
-        "n": 4400,
-        "faltantes": 157,
-        "pct": 3.568,
-        "p_mes": 4.6365827406026174e-18,
-        "p_nivel_previo": 0.7658634661791176,
-        "p_volatilidad_previa": 0.07696495775704082,
+        "n": 4407,
+        "faltantes": 158,
+        "pct": 3.585,
+        "p_mes": 2.8928074906234324e-18,
+        "p_nivel_previo": 0.7596875309506184,
+        "p_volatilidad_previa": 0.0639434518125905,
         "mecanismo": "MAR (depende de: mes)"
       },
       "imputacion_evaluada": [
         {
           "metodo": "interpolacion_lineal",
-          "MAE": 0.00858,
-          "RMSE": 0.02411
+          "MAE": 0.00909,
+          "RMSE": 0.0237
         },
         {
           "metodo": "ultimo_valor (ffill)",
-          "MAE": 0.0154,
-          "RMSE": 0.05861
+          "MAE": 0.01368,
+          "RMSE": 0.05014
         },
         {
           "metodo": "media_global",
-          "MAE": 2.09999,
-          "RMSE": 2.49123
+          "MAE": 2.10342,
+          "RMSE": 2.49647
         }
       ],
       "metodo_imputacion": "interpolacion_lineal",
       "atipicos": {
-        "atipico_iqr": 604,
-        "atipico_zrobusto": 417,
-        "atipico_iforest": 44,
-        "consenso_2_o_mas": 417
+        "atipico_iqr": 606,
+        "atipico_zrobusto": 419,
+        "atipico_iforest": 45,
+        "consenso_2_o_mas": 419
       },
       "limites_iqr": [
-        -0.002563297363252892,
-        0.0026469034050219387
+        -0.002557348388205566,
+        0.0026410487361498702
       ],
-      "registros": 4243
+      "registros": 4249
     },
     "tipo_cambio_fix_usd_mxn_diario": {
       "faltantes": {
-        "n": 4400,
-        "faltantes": 157,
-        "pct": 3.568,
-        "p_mes": 4.6365827406026174e-18,
-        "p_nivel_previo": 0.7818602845507039,
-        "p_volatilidad_previa": 0.09679742297850459,
+        "n": 4406,
+        "faltantes": 158,
+        "pct": 3.586,
+        "p_mes": 2.728548544864369e-18,
+        "p_nivel_previo": 0.7728628193808627,
+        "p_volatilidad_previa": 0.09782727020789612,
         "mecanismo": "MAR (depende de: mes)"
       },
       "imputacion_evaluada": [
         {
           "metodo": "interpolacion_lineal",
-          "MAE": 0.06515,
-          "RMSE": 0.09175
+          "MAE": 0.07065,
+          "RMSE": 0.10568
         },
         {
           "metodo": "ultimo_valor (ffill)",
-          "MAE": 0.08759,
-          "RMSE": 0.12954
+          "MAE": 0.08741,
+          "RMSE": 0.12362
         },
         {
           "metodo": "media_global",
-          "MAE": 2.63161,
-          "RMSE": 3.08247
+          "MAE": 2.66061,
+          "RMSE": 3.10069
         }
       ],
       "metodo_imputacion": "interpolacion_lineal",
       "atipicos": {
-        "atipico_iqr": 190,
+        "atipico_iqr": 191,
         "atipico_zrobusto": 85,
-        "atipico_iforest": 44,
+        "atipico_iforest": 45,
         "consenso_2_o_mas": 85
       },
       "limites_iqr": [
-        -0.014459348300056796,
-        0.01413941872373048
+        -0.014450003289959268,
+        0.014141341574782418
       ],
-      "registros": 4243
+      "registros": 4248
     },
     "valor_udis_diario": {
       "faltantes": {
-        "n": 6164,
+        "n": 6172,
         "faltantes": 0,
         "pct": 0.0,
         "p_mes": null,
@@ -138,18 +138,18 @@
       "imputacion_evaluada": [
         {
           "metodo": "interpolacion_lineal",
-          "MAE": 2e-05,
-          "RMSE": 0.00012
+          "MAE": 3e-05,
+          "RMSE": 0.00015
         },
         {
           "metodo": "ultimo_valor (ffill)",
-          "MAE": 0.001,
-          "RMSE": 0.00131
+          "MAE": 0.00099,
+          "RMSE": 0.00128
         },
         {
           "metodo": "media_global",
-          "MAE": 1.08743,
-          "RMSE": 1.28661
+          "MAE": 1.10668,
+          "RMSE": 1.30977
         }
       ],
       "metodo_imputacion": "no aplica",
@@ -160,10 +160,10 @@
         "consenso_2_o_mas": 92
       },
       "limites_iqr": [
-        -0.00024229626324207,
-        0.00048338610490444855
+        -0.00024238840033125042,
+        0.0004835468049140812
       ],
-      "registros": 6164
+      "registros": 6172
     }
   }
 }
