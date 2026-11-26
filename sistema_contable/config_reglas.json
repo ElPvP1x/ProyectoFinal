@@ -1,0 +1,118 @@
+{
+  "_comentario": "Configuracion editable del motor fiscal. No requiere tocar el codigo Python.",
+
+  "tope_efectivo": 2000.00,
+  "aplicar_tope_efectivo_a_egresos": false,
+  "aplicar_tope_efectivo_a_nomina": false,
+  "aplicar_lista_negra_a_nomina_y_pagos": false,
+  "filas_a_escanear_encabezado": 30,
+
+  "_nomina_suma": "percepciones = el gasto de nomina es el total de percepciones + otros pagos (el ISR retenido tambien es erogacion del patron). total = suma el neto depositado.",
+  "nomina_suma": "percepciones",
+
+  "_notas_credito": "excluir = se informan pero NO entran en la suma (lo que pediste). restar = se descuentan del total, como antes.",
+  "notas_credito": "excluir",
+
+  "_divisas": "Todo el dashboard trabaja en MXN. modo_tipo_cambio: 'actual' usa la tasa de hoy; 'fecha' usa la del dia de cada CFDI. tipos_cambio_fijos manda sobre todo: capturalo con el tipo de cambio DOF, que es el unico valido fiscalmente (Art. 20 CFF).",
+  "_iva_por_defecto": "Si un CFDI no trae NI subtotal NI impuestos, el sistema solo conoce el Total y lo marca como incompleto. Pon 0.16 para que lo desglose asumiendo IVA del 16%.",
+  "iva_por_defecto": 0,
+
+  "convertir_a_mxn": true,
+  "modo_tipo_cambio": "actual",
+  "tipos_cambio_fijos": {},
+
+  "_deducciones_personales": "Honorarios medicos (D01), colegiaturas (D10), funerales (D03), seguros de gastos medicos (D07)... NO son deducciones autorizadas de la actividad: van en la declaracion anual con sus propios topes. Se detectan por el Uso del CFDI (familia D0*) y se muestran aparte sin entrar en la suma.",
+  "separar_deducciones_personales": true,
+  "usos_deduccion_personal": [],
+
+  "_combustible": "Art. 27 F-III LISR: el combustible exige medios bancarios SIN IMPORTAR EL MONTO, aunque sean 200 pesos. Se detecta por la clave del catalogo SAT (si la fuente es XML) o por la descripcion.",
+  "combustible_solo_medios_bancarios": true,
+  "claves_prodserv_combustible": ["151015", "151016", "151017", "151018"],
+  "_palabras_combustible": "Palabras que delatan combustible en la descripcion. NO pongas 'magna' ni 'premium' solas: pescan productos que no son gasolina (un 'EXTRA PREMIUM' cualquiera). Con XML la deteccion va por clave del SAT y es confiable.",
+  "palabras_combustible": ["gasolina", "diesel", "combustible", "combustibles",
+                           "pemex", "gas lp", "carburante", "gasolina magna",
+                           "gasolina premium"],
+  "formas_pago_bancarias": ["02", "03", "04", "05", "06", "28", "29"],
+
+  "_hojas_ignoradas": "Fragmentos del nombre de hoja que NO se deben leer. Ej: [\"XML\"] para que solo tome 'Deducciones autorizadas'.",
+  "hojas_ignoradas": [],
+
+  "_claves_prodserv_no_deducibles": "Claves del catalogo de productos y servicios del SAT que NUNCA son deducibles. Solo funciona leyendo XML, porque el Excel no trae la clave. Es mas confiable que la lista de palabras: atrapa 'Membresia deportiva corporativa' sin que diga 'gimnasio'. Ej: 93141506 gimnasios, 90101501 restaurantes, 90111502 hoteles, 92101501 seguridad privada.",
+  "claves_prodserv_no_deducibles": [],
+
+  "_rfc_contribuyente": "RFC del cliente al que pertenece la descarga. Sirve para decidir que CFDI son Emitidas y cuales Recibidas al leer XML. Si se deja vacio, se deduce del RFC que se repite en todos los comprobantes.",
+  "rfc_contribuyente": "",
+
+  "_origen_por_archivo": "Fuerza el tipo de archivo cuando el nombre no lo dice. Ej: {\"reporte1.xlsx\": \"EMITIDAS\"}. Valores: EMITIDAS, RECIBIDAS, EGRESOS, PAGOS, NOMINAS.",
+  "origen_por_archivo": {},
+
+  "_regla4": "Coincidencia por PALABRA COMPLETA sobre la descripcion normalizada (sin acentos, minusculas). 'cine' NO hace match con 'cocina'.",
+  "lista_negra": [
+    "gym", "gimnasio", "cine", "cinepolis", "cinemex",
+    "despensa", "supermercado", "abarrotes",
+    "restaurante", "restaurant", "bar", "cantina", "cerveza", "vino", "licor", "alcohol",
+    "tabaco", "cigarro", "cigarros",
+    "boliche", "casino", "apuesta", "apuestas", "loteria",
+    "netflix", "spotify", "disney", "videojuego", "videojuegos", "juguete", "juguetes",
+    "ropa", "zapatos", "perfume", "joyeria", "reloj",
+    "mascota", "veterinaria", "croquetas",
+    "crucero", "spa", "masaje",
+    "funeral", "floreria", "regalo", "regalos", "propina",
+    "multa", "recargo", "donativo"
+  ],
+  "lista_negra_frases": [
+    "consumo en restaurante",
+    "alimentos y bebidas",
+    "servicio de comedor",
+    "gastos personales",
+    "articulos para el hogar"
+  ],
+  "_regla_rfc_generico": "CFF 29-A: una factura al RFC generico XAXX010101000 (publico en general) no esta a nombre del contribuyente: ni deducible ni acreditable. Ponlo en false solo si tu portal ya filtra esas facturas.",
+  "rechazar_rfc_generico": true,
+
+  "_inversiones": "Los CFDI con Uso I01-I08 son inversiones (LISR 34): no se deducen en el mes, se deprecian. Se muestran aparte y su IVA si cuenta como acreditable. Ponlo en false para que sumen como gasto, como antes.",
+  "separar_inversiones": true,
+  "_palabras_no_inversion": "Si la descripcion trae alguna de estas palabras, la factura NO se trata como inversion aunque el uso sea I01-I08 (intereses, seguros, mantenimiento y reparaciones son gasto del mes: LISR 36-I).",
+  "palabras_no_inversion": ["interes", "intereses", "financiamiento", "comision", "comisiones", "seguro", "mantenimiento", "reparacion", "reparaciones", "renta", "arrendamiento", "refaccion", "refacciones", "gasolina"],
+
+  "_restaurantes": "LISR 28-XX: solo el 8.5 % de un consumo en restaurante es deducible, y solo si se pago con tarjeta de credito, debito, de servicios (04, 28, 29) o monedero electronico (05). Los bares nunca. modo: 'parcial' (8.5 %) o 'rechazar' (todo fuera, como antes). La clave 90101501 (restaurantes) sale de tu configuracion anterior: confirmala en el catalogo del SAT.",
+  "restaurantes": {
+    "modo": "parcial",
+    "porcentaje": 0.085,
+    "formas_pago": ["04", "05", "28", "29"],
+    "claves_prodserv": ["90101501"],
+    "palabras": ["restaurante", "restaurant", "consumo en restaurante", "alimentos y bebidas"]
+  },
+
+  "_lista_69b": "CFF 69-B. Un proveedor en la lista DEFINITIVA del SAT no produce efecto fiscal. Descarga la lista del SAT y guardala como lista_69b.csv junto a la aplicacion (columnas RFC y Situacion del contribuyente), o escribe los RFC aqui. Los 'presuntos' solo generan una alerta.",
+  "archivo_69b": "lista_69b.csv",
+  "rfc_69b_definitivos": [],
+  "rfc_69b_presuntos": [],
+
+  "_ejercicio_fiscal": "LISR 27-XVIII: una factura de otro ejercicio no se deduce en este. Pon el anio (por ejemplo 2026) para que el sistema marque las de otro anio. Vacio = no revisa.",
+  "ejercicio_fiscal": null,
+
+  "_constancia": "Datos de la Constancia de Situacion Fiscal del cliente. Si los capturas, el sistema alerta cuando el codigo postal o el regimen del receptor no coinciden (CFF 29-A). Vacio = no revisa.",
+  "cp_contribuyente": "",
+  "regimen_contribuyente": "",
+
+  "_topes": "Topes de la ley: automovil $175,000 ($250,000 electrico o hibrido, LISR 36-II), lentes $2,500 por persona al ano (RLISR 264). Tope global de deducciones personales = lo menor entre 5 UMA anuales y 15 % de los ingresos (LISR 151). La UMA diaria 2026 ($117.31) sale de la investigacion: confirmala. Captura tus ingresos anuales para aplicar el 15 %.",
+  "tope_auto": 175000,
+  "tope_auto_electrico": 250000,
+  "tope_lentes": 2500,
+  "uma_diaria": 117.31,
+  "ingresos_anuales": null,
+
+  "_alertas": "Avisos que no cambian la suma: nota de credito sin relacion, descripcion generica, PUE con forma 99, retenciones faltantes o mal calculadas, datos del receptor, proveedor 69-B presunto.",
+  "alertas": true,
+
+  "_rfc_exentos": "RFC de emisores cuyos conceptos NUNCA se filtran por lista negra (ej. un proveedor de alimentos que si es deducible por giro).",
+  "rfc_exentos_lista_negra": [],
+
+  "_analisis_color": "Colores de fuente/relleno que el sistema interpreta como Nota de Credito.",
+  "colores_nota_credito": ["FFFF0000", "FFC00000", "FF9C0006", "FFCC0000", "FFFFC7CE"],
+  "detectar_rojo_por_heuristica": true,
+  "detectar_relleno_rojo": true,
+  "columnas_clave_para_color": ["Total", "UUID", "Tipo Comprobante", "Descripcion"],
+  "tratar_total_negativo_como_egreso": true
+}

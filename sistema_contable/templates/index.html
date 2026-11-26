@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema Contable · Auditor CFDI 4.0</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#161d26; --panel2:#1d2630; --line:#2a3542;
+    --txt:#e6edf3; --muted:#8b9bb0; --acc:#3b82f6; --ok:#22c55e; --no:#ef4444; --warn:#f59e0b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+       font:14px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
+  header{padding:22px 28px;border-bottom:1px solid var(--line);
+         background:linear-gradient(180deg,#16202c,#0f1419)}
+  header h1{margin:0;font-size:20px;letter-spacing:.3px}
+  header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+  main{max-width:1680px;margin:0 auto;padding:24px 20px 60px}
+  .drop{border:2px dashed var(--line);border-radius:14px;padding:30px 20px;text-align:center;
+        background:var(--panel);transition:.18s;cursor:pointer}
+  .drop:hover,.drop.over{border-color:var(--acc);background:#18222f}
+  .drop b{display:block;font-size:16px;margin-bottom:6px}
+  .drop span{color:var(--muted);font-size:13px}
+  #lista{margin:14px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;
+        padding:5px 12px;font-size:12px;color:var(--muted)}
+  .chip b{color:var(--txt);font-weight:600}
+  .acciones{display:flex;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap}
+  button{border:0;border-radius:9px;padding:11px 20px;font-size:14px;font-weight:600;
+         cursor:pointer;transition:.15s}
+  .primario{background:var(--acc);color:#fff}
+  .primario:hover{background:#2f6fd8}
+  .primario:disabled{background:#33404f;color:#7b8794;cursor:not-allowed}
+  .fantasma{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .grupo{margin:26px 0 10px;font-size:11px;letter-spacing:.9px;text-transform:uppercase;
+         color:var(--muted);font-weight:700}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc);
+       border-radius:12px;padding:15px 17px}
+  .kpi h4{margin:0 0 8px;font-size:11px;letter-spacing:.7px;text-transform:uppercase;
+          color:var(--muted);font-weight:600}
+  .kpi .v{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+  .kpi .v.chico{font-size:16px}
+  .kpi small{color:var(--muted);font-size:11px;display:block;margin-top:3px}
+  .kpi.suma{border-left-color:var(--ok)} .kpi.resta{border-left-color:var(--no)}
+  .kpi.neutro{border-left-color:var(--muted)} .kpi.alerta{border-left-color:var(--warn)}
+  .kpi.total{border-left-color:var(--ok);background:linear-gradient(135deg,#122018,#161d26)}
+  .kpi.total .v{font-size:26px;color:#4ade80}
+  .kpi.ingreso{border-left-color:#7dd3fc;background:linear-gradient(135deg,#10202e,#161d26)}
+  .kpi.ingreso .v{font-size:26px;color:#7dd3fc}
+
+  .bloques{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+  .bloque{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .bloque h3{margin:0 0 2px;font-size:15px;display:flex;justify-content:space-between;
+             align-items:baseline;gap:10px}
+  .bloque h3 .m{font-variant-numeric:tabular-nums;color:#4ade80;font-size:18px}
+  .bloque .arch{color:var(--muted);font-size:11px;margin-bottom:10px;word-break:break-all}
+  .bloque dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;margin:0;font-size:12.5px}
+  .bloque dt{color:var(--muted)}
+  .bloque dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+  .bloque .sep{grid-column:1/-1;border-top:1px dashed var(--line);margin:7px 0 4px}
+  .bloque .fuera{color:#fca5a5}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:26px;flex-wrap:wrap}
+  .tab{padding:10px 16px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+       font-size:13px;font-weight:600;white-space:nowrap}
+  .tab:hover{color:var(--txt)}
+  .tab.on{color:var(--txt);border-bottom-color:var(--acc)}
+  .tab .n{opacity:.65;font-weight:400}
+  .tabla{overflow:auto;max-height:62vh;border:1px solid var(--line);border-top:0;
+         border-radius:0 0 12px 12px;background:var(--panel)}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+  th{position:sticky;top:0;z-index:3;background:var(--panel2);text-align:left;padding:9px 11px;
+     white-space:nowrap;border-bottom:1px solid var(--line);font-size:10.5px;
+     text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  th.num{text-align:right}
+  td{padding:8px 11px;border-bottom:1px solid #1f2832;vertical-align:top}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  td .sub{display:block;color:var(--muted);font-size:10.5px;margin-top:2px;
+          font-weight:400;letter-spacing:.2px}
+  td.num .sub{text-align:right}
+  td.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+  tr:hover td{background:#1a232e}
+  tr.nosuma td{opacity:.62}
+  tr.nosuma td:first-child{box-shadow:inset 3px 0 0 var(--no)}
+  tfoot td{position:sticky;bottom:0;z-index:2;background:#1b2836;border-top:2px solid #33465c;
+           border-bottom:0;font-weight:700;white-space:nowrap}
+  tfoot td.num{color:#4ade80}
+  tfoot td .sub{color:#7f93aa}
+  .motivo{color:#fca5a5;max-width:300px;white-space:normal}
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;
+         white-space:nowrap}
+  .b-sum{background:#0d2f1c;color:#4ade80}.b-res{background:#3a1414;color:#fca5a5}
+  .b-nom{background:#132a3f;color:#7dd3fc}.b-pag{background:#2a2340;color:#c4b5fd}
+  .b-off{background:#2b2b2b;color:#b9b9b9}
+  .aviso{background:#2a2110;border:1px solid #4a3a12;color:#fcd34d;padding:12px 16px;
+         border-radius:10px;margin:16px 0;font-size:13px;line-height:1.7}
+  .aviso code{background:#00000040;padding:1px 5px;border-radius:4px}
+  .error{background:#2a1212;border:1px solid #5a2020;color:#fca5a5;padding:12px 16px;
+         border-radius:10px;margin:16px 0;font-size:13px}
+  .diag{color:var(--muted);font-size:12px;margin-top:12px;line-height:1.7}
+  .truncado{padding:9px 14px;color:#fcd34d;font-size:12px;background:#2a2110;
+            border-top:1px solid #4a3a12}
+  .oculto{display:none}
+  .cargando{display:inline-block;width:15px;height:15px;border:2px solid #ffffff55;
+            border-top-color:#fff;border-radius:50%;animation:giro .7s linear infinite;
+            vertical-align:-2px;margin-right:8px}
+  @keyframes giro{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Sistema Contable · Auditor de CFDI 4.0</h1>
+  <p>Sube las descargas del SAT sin trabajar (emitidas, recibidas, pagos, nóminas, egresos).
+     Todo se convierte a pesos y se audita con las reglas fiscales.</p>
+</header>
+
+<main>
+  <div class="drop" id="drop">
+    <b>Arrastra aquí los archivos del cliente</b>
+    <span>Excel del portal contable (.xlsx, .xls, .csv) <b>o</b> los XML del SAT
+      (.xml sueltos o el .zip de la descarga masiva) · sube los que tengas</span>
+    <input type="file" id="input" multiple accept=".xlsx,.xlsm,.xls,.csv,.xml,.zip" hidden>
+  </div>
+  <div id="lista"></div>
+
+  <div class="acciones">
+    <button class="primario" id="btnProcesar" disabled>Procesar y auditar</button>
+    <button class="fantasma" id="btnLimpiar">Limpiar</button>
+    <button class="primario oculto" id="btnDescargar" style="background:var(--ok)">⬇ Descargar Excel depurado</button>
+  </div>
+
+  <div id="mensajes"></div>
+
+  <section id="resultado" class="oculto">
+    <div id="perfil"></div>
+
+    <div class="grupo">Resumen general</div>
+    <div class="kpis" id="kpis"></div>
+
+    <div class="grupo">Impuestos y montos del periodo</div>
+    <div class="kpis" id="kpis2"></div>
+
+    <div class="grupo" id="tituloTasas">Desglose por tasa de IVA</div>
+    <div class="kpis" id="tasas"></div>
+
+    <div class="grupo" id="tituloBloques">Detalle por archivo</div>
+    <div class="bloques" id="bloques"></div>
+
+    <div class="tabs" id="tabs"></div>
+    <div class="tabla" id="tabla"></div>
+    <div class="diag" id="diag"></div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+let archivos = [], datos = null, pestana = null;
+
+const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const money = (n, cur, corto) => {
+  const v = Number(n) || 0;
+  const op = {style:'currency', currency: cur || 'MXN'};
+  if (corto) op.currencyDisplay = 'narrowSymbol';
+  try { return v.toLocaleString('es-MX', op); }
+  catch (e) { return v.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+};
+const mx = n => money(n, 'MXN');
+
+/* Columnas de la tabla. 'sub' = dato que se pinta debajo en letra chica.
+   Las numéricas que dan cero en toda la pestaña se esconden solas. */
+const COLS = [
+  {k:'Origen',            t:'Archivo',          sub:'Archivo Origen'},
+  {k:'UUID',              t:'UUID',             clase:'mono', corte:18},
+  {k:'Fecha Emision',     t:'Fecha'},
+  {k:'RFC Emisor',        t:'RFC Emisor',       clase:'mono', sub:'Nombre Emisor'},
+  {k:'RFC Receptor',      t:'RFC Receptor',     clase:'mono', sub:'Nombre Receptor'},
+  {k:'Tipo Comprobante',  t:'Tipo',             sub:'Tipo Comprobante Desc'},
+  {k:'Uso CFDI',          t:'Uso CFDI',         sub:'Uso CFDI Desc'},
+  {k:'Forma Pago',        t:'Forma de pago',    sub:'Forma Pago Desc'},
+  {k:'Metodo Pago',       t:'Método de pago',   sub:'Metodo Pago Desc'},
+  {k:'Descripcion',       t:'Descripción',      corte:70},
+  {k:'Claves ProdServ',   t:'Clave SAT',        clase:'mono'},
+  {k:'UUID Relacionados', t:'Paga la factura',  clase:'mono', corte:18},
+  {k:'Total Original',    t:'Importe original', num:true, moneda:'Moneda Original'},
+  {k:'Tipo de Cambio',    t:'Tipo de cambio',   tasa:true},
+  {k:'Subtotal',          t:'Subtotal',         num:true},
+  {k:'Descuento',         t:'Descuento',        num:true},
+  {k:'IVA',               t:'IVA trasladado',   num:true},
+  {k:'IEPS',              t:'IEPS',             num:true},
+  {k:'IVA Retenido',      t:'IVA retenido',     num:true},
+  {k:'ISR Retenido',      t:'ISR retenido',     num:true},
+  {k:'Retenciones',       t:'Total retenido',   num:true},
+  {k:'Percepciones',      t:'Percepciones',     num:true},
+  {k:'Deducciones',       t:'Deducciones',      num:true},
+  {k:'Otros Pagos',       t:'Otros pagos',      num:true},
+  {k:'Total',             t:'Total',            num:true},
+  {k:'Monto Pagado',      t:'Monto pagado',     num:true},
+  {k:'Importe Computado', t:'Suma al total',    num:true, fuerte:true},
+  {k:'IVA Acreditable',   t:'IVA acreditable',  num:true},
+  {k:'Clasificacion',     t:'Clasificación',    badge:true},
+  {k:'Motivo de Rechazo', t:'Motivo / nota',    clase:'motivo', corte:160},
+  {k:'Alertas',          t:'Alertas',          clase:'motivo', corte:160},
+];
+
+/* ---------- Selección de archivos ---------- */
+const drop = $('#drop'), input = $('#input');
+drop.onclick = () => input.click();
+drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+drop.ondragleave = () => drop.classList.remove('over');
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); agregar(e.dataTransfer.files); };
+input.onchange = e => agregar(e.target.files);
+
+/* Pista de qué archivo cree el sistema que es, antes de procesar */
+function adivinar(nombre){
+  const n = nombre.toLowerCase();
+  // Los XML dicen solos lo que son: no hace falta adivinar por el nombre
+  if (/\.xml$|\.zip$/.test(n)) return 'XML del SAT';
+  if (/nomina|nómina|payroll/.test(n)) return 'Nóminas';
+  if (/emitid|ventas|facturacion|facturación/.test(n)) return 'Emitidas';
+  if (/egreso/.test(n)) return 'Egresos';
+  if (/pago|rep|complemento/.test(n)) return 'Pagos';
+  if (/recibid|compras|proveedor|gastos/.test(n)) return 'Recibidas';
+  return 'se deduce del contenido';
+}
+function agregar(fl){
+  for (const f of fl) if (!archivos.some(a => a.name === f.name && a.size === f.size)) archivos.push(f);
+  pintarLista();
+}
+function pintarLista(){
+  $('#lista').innerHTML = archivos.map(f =>
+    `<span class="chip">📄 ${esc(f.name)} · ${(f.size/1024).toFixed(0)} KB · <b>${adivinar(f.name)}</b></span>`).join('');
+  $('#btnProcesar').disabled = archivos.length === 0;
+}
+$('#btnLimpiar').onclick = () => {
+  archivos = []; datos = null; pestana = null; input.value = '';
+  pintarLista(); $('#resultado').classList.add('oculto');
+  $('#btnDescargar').classList.add('oculto'); $('#mensajes').innerHTML = '';
+};
+
+/* ---------- Procesar ---------- */
+$('#btnProcesar').onclick = async () => {
+  const btn = $('#btnProcesar');
+  btn.disabled = true; btn.innerHTML = '<i class="cargando"></i>Procesando…';
+  $('#mensajes').innerHTML = '';
+  const fd = new FormData();
+  archivos.forEach(f => fd.append('archivos', f));
+  try {
+    const r = await fetch('/procesar', {method:'POST', body: fd});
+    const j = await r.json();
+    if (!j.ok) { $('#mensajes').innerHTML = `<div class="error"><b>Error:</b> ${esc(j.error)}</div>`; }
+    else { datos = j; pestana = j.orden_tablas[0]; render(); }
+  } catch (e) {
+    $('#mensajes').innerHTML = `<div class="error"><b>Error de conexión:</b> ${esc(e.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Procesar y auditar';
+  }
+};
+
+/* ---------- Render ---------- */
+function render(){
+  const t = datos.totales;
+
+  $('#kpis').innerHTML = `
+    <div class="kpi ingreso"><h4>Ingresos facturados</h4><div class="v">${mx(t.total_ingresos)}</div>
+      <small>Emitidas que sí acumulan${t.periodo ? ' · ' + esc(t.periodo) : ''}</small></div>
+    <div class="kpi total"><h4>= Total deducible</h4><div class="v">${mx(t.total_deducible)}</div>
+      <small>Gastos + nómina + REP pagados</small></div>
+    <div class="kpi neutro"><h4>Comprobantes</h4><div class="v">${t.conteo_total}</div>
+      <small>${t.conteo_suma} suman · ${t.conteo_total - t.conteo_suma} quedan fuera</small></div>
+    <div class="kpi resta"><h4>Notas de crédito</h4><div class="v chico">${mx(t.total_notas_credito)}</div>
+      <small>${t.conteo_notas_credito} CFDI · <b>no</b> entran en la suma</small></div>
+    <div class="kpi alerta"><h4>PPD sin REP</h4><div class="v chico">${mx(t.total_ppd_excluido)}</div>
+      <small>${t.conteo_ppd_excluido} CFDI · suman cuando llegue su pago</small></div>
+    <div class="kpi resta"><h4>Rechazado por reglas</h4><div class="v chico">${mx(t.total_rechazado)}</div>
+      <small>${t.conteo_rechazados} CFDI · cancelados, efectivo, no deducibles</small></div>`;
+
+  $('#kpis2').innerHTML = `
+    <div class="kpi neutro"><h4>IVA trasladado (emitidas)</h4><div class="v">${mx(t.iva_trasladado)}</div><small>IVA que cobraste</small></div>
+    <div class="kpi neutro"><h4>IVA acreditable (recibidas)</h4><div class="v">${mx(t.iva_acreditable)}</div><small>IVA que pagaste a proveedores</small></div>
+    <div class="kpi neutro"><h4>IEPS</h4><div class="v">${mx(t.total_ieps)}</div><small>Impuesto especial trasladado</small></div>
+    <div class="kpi neutro"><h4>IVA retenido</h4><div class="v">${mx(t.total_iva_retenido)}</div><small>Retenciones de IVA</small></div>
+    <div class="kpi neutro"><h4>ISR retenido</h4><div class="v">${mx(t.total_isr_retenido)}</div><small>Incluye el de nómina</small></div>
+    <div class="kpi neutro"><h4>Total retenciones</h4><div class="v">${mx(t.total_retenciones)}</div><small>IVA + ISR retenidos</small></div>
+    <div class="kpi neutro"><h4>Base deducible sin IVA</h4><div class="v">${mx(t.subtotal_deducible)}</div><small>Subtotal de gastos y nómina</small></div>
+    <div class="kpi neutro"><h4>Base facturada sin IVA</h4><div class="v">${mx(t.subtotal_ingresos)}</div><small>Subtotal de emitidas</small></div>
+    <div class="kpi neutro"><h4>Descuentos</h4><div class="v">${mx(t.total_descuento)}</div><small>Aplicados en los CFDI</small></div>`;
+
+  pintarPerfil(t.perfil);
+  pintarTasas(t.desglose_tasas);
+  pintarBloques(t.bloques || []);
+  pintarAvisos(t);
+
+  const orden = datos.orden_tablas || [];
+  if (!orden.includes(pestana)) pestana = orden[0];
+  $('#tabs').innerHTML = orden.map(k => {
+    const tb = datos.tablas[k];
+    return `<div class="tab ${k===pestana?'on':''}" data-t="${k}">${esc(tb.etiqueta)}
+            <span class="n">(${tb.conteo})</span></div>`;
+  }).join('');
+  $('#tabs').querySelectorAll('.tab').forEach(el =>
+    el.onclick = () => { pestana = el.dataset.t; render(); });
+
+  pintarTabla(datos.tablas[pestana]);
+
+  $('#diag').innerHTML = (datos.diagnosticos||[]).map(d => {
+    if (!d.origen) {
+      return (d.avisos||[]).length
+        ? `<div>· <b>${esc(d.archivo)}</b> — ${(d.avisos||[]).map(esc).join(' ')}</div>` : '';
+    }
+    const avisos = (d.avisos||[]).map(esc).join(' ');
+    if (d.tipo_fuente === 'xml')
+      return `<div>· <b>${esc(d.archivo)}</b> → <b>XML del SAT</b>:
+        ${esc(d.origen_etiqueta)} — ${d.filas||0} CFDI leídos del comprobante original.
+        Contribuyente deducido por ${esc(d.origen_detectado_por)}. ${avisos}</div>`;
+    const cols = d.columnas_detectadas ? Object.keys(d.columnas_detectadas).length : 0;
+    return `<div>· <b>${esc(d.archivo)}</b> → <b>${esc(d.origen_etiqueta)}</b>
+      (detectado por ${esc(d.origen_detectado_por)}) — hoja «${esc(d.hoja||'-')}»,
+      encabezados en la fila ${d.fila_encabezado||'?'}, ${cols} columnas mapeadas,
+      ${d.filas||0} filas, ${d.filas_rojas||0} en rojo. ${avisos}</div>`;
+  }).join('');
+
+  $('#btnDescargar').classList.remove('oculto');
+  $('#btnDescargar').onclick = () => window.location = '/descargar/' + datos.id_sesion;
+  $('#resultado').classList.remove('oculto');
+}
+
+/* ---------- Perfil del contribuyente ---------- */
+function pintarPerfil(p){
+  const caja = $('#perfil');
+  if (!p || !p.rfc){ caja.innerHTML = ''; return; }
+  const persona = p.tipo_persona === 'fisica' ? 'Persona física'
+                : p.tipo_persona === 'moral'  ? 'Persona moral' : '';
+  const confirmado = !!p.giro_confirmado;
+  const dec = p.emisores_por_decision || {};
+  const porRevisar = dec.revisar || 0;
+
+  caja.innerHTML = `
+    <div class="grupo">Contribuyente</div>
+    <div class="bloque" style="margin-bottom:4px">
+      <h3><span>${esc(p.nombre || p.rfc)}</span>
+          <span class="m" style="font-size:14px;color:var(--muted)">${esc(p.rfc)}</span></h3>
+      <div class="arch">${esc(persona)} · ${p.emisores_total} proveedores en catálogo${
+        porRevisar ? ` · <b style="color:#fcd34d">${porRevisar} sin clasificar</b>` : ''}</div>
+      <dl>
+        <dt>Giro ${confirmado ? 'confirmado' : '<b style="color:#fcd34d">propuesto</b>'}</dt>
+        <dd><b>${esc(p.giro_nombre || '—')}</b>${
+          confirmado ? '' : ` <span style="color:var(--muted)">(${Math.round((p.confianza||0)*100)}% del gasto)</span>`}</dd>
+        ${(p.evidencia||[]).map(e => `<dt style="opacity:.75">por</dt><dd style="opacity:.75">${esc(e)}</dd>`).join('')}
+      </dl>
+      ${confirmado ? '' : `<div class="truncado" style="margin-top:10px;border-radius:8px;border-top:0">
+        El giro todavía no está confirmado. Ábrelo en
+        <code>${esc(p.archivo || '')}</code> y pon <code>"confirmado"</code> dentro de
+        <code>"giro"</code> para fijarlo. Mientras no se confirme, el sistema no usa el
+        giro para decidir nada: solo lo propone.</div>`}
+    </div>`;
+}
+
+/* ---------- Desglose por tasa de IVA ---------- */
+function pintarTasas(d){
+  if (!d){ $('#tasas').innerHTML = ''; $('#tituloTasas').textContent = ''; return; }
+  const de = (d.origenes||[]).join(' + ') || 'gastos';
+  $('#tituloTasas').textContent = `Desglose por tasa de IVA — ${de}`;
+  const tarjeta = (clase, titulo, base, pie) =>
+    `<div class="kpi ${clase}"><h4>${titulo}</h4><div class="v">${mx(base)}</div>
+     <small>${pie}</small></div>`;
+  let html = tarjeta('suma', 'Tasa 16%', d.base_16, `IVA ${mx(d.iva_16)}`);
+  if (d.base_8) html += tarjeta('suma', 'Tasa 8%', d.base_8, `IVA ${mx(d.iva_8)}`);
+  html += tarjeta('neutro', 'Tasa 0%', d.base_0, 'Sin IVA trasladado');
+  html += tarjeta('neutro', 'Exentos', d.base_exento, 'No causan IVA');
+  if (d.base_sin_clasificar > 0.5)
+    html += tarjeta('alerta', 'Sin clasificar', d.base_sin_clasificar,
+                    'El archivo no dice si es tasa 0 o exento');
+  html += tarjeta('total', 'Base total', d.base_total, `${de}, sin IVA`);
+  html += tarjeta('ingreso', 'Nómina — percepciones', d.nomina_percepciones,
+                  `Deducciones ${mx(d.nomina_deducciones)} · neto ${mx(d.nomina_neto)}`);
+  $('#tasas').innerHTML = html;
+}
+
+/* ---------- Tarjeta por archivo ---------- */
+function linea(etiqueta, valor, clase){
+  if (!valor) return '';
+  return `<dt class="${clase||''}">${etiqueta}</dt><dd class="${clase||''}">${mx(valor)}</dd>`;
+}
+function pintarBloques(bloques){
+  $('#tituloBloques').textContent = `Detalle por archivo (${bloques.length})`;
+  $('#bloques').innerHTML = bloques.map(b => {
+    let detalle = '';
+    if (b.origen === 'NOMINAS'){
+      detalle = linea('Percepciones', b.percepciones) + linea('Otros pagos', b.otros_pagos)
+              + linea('Deducciones', b.deducciones) + linea('ISR retenido', b.isr_retenido)
+              + linea('IVA retenido', b.iva_retenido) + linea('Neto depositado', b.neto_pagado);
+    } else {
+      detalle = linea('Subtotal', b.subtotal) + linea('Descuento', b.descuento)
+              + linea('IVA trasladado', b.iva) + linea('IEPS', b.ieps)
+              + linea('IVA retenido', b.iva_retenido) + linea('ISR retenido', b.isr_retenido);
+    }
+    const pagos = (b.formas_pago||[]).map(f =>
+      `<dt>${esc(f.clave)} · ${esc(f.descripcion)} <span style="opacity:.6">×${f.conteo}</span></dt>
+       <dd>${mx(f.monto)}${f.rechazado ? ` <span class="fuera">(−${mx(f.rechazado)})</span>` : ''}</dd>`).join('');
+
+    const fuera = linea(`Deducciones personales ×${(b.deducciones_personales||{}).conteo}`,
+                        (b.deducciones_personales||{}).monto, 'fuera')
+                + linea(`Combustible sin medio bancario ×${(b.combustible_rechazado||{}).conteo}`,
+                        (b.combustible_rechazado||{}).monto, 'fuera')
+                + linea(`Notas de crédito ×${b.notas_credito.conteo}`, b.notas_credito.monto, 'fuera')
+                + linea(`PPD sin REP ×${b.ppd_excluido.conteo}`, b.ppd_excluido.monto, 'fuera')
+                + linea(`Rechazados ×${b.rechazado.conteo}`, b.rechazado.monto, 'fuera');
+
+    return `<div class="bloque">
+      <h3><span>${esc(b.etiqueta)}</span><span class="m">${mx(b.total)}</span></h3>
+      <div class="arch">${esc((b.archivos||[]).join(' · '))} — ${b.conteo_suma} de ${b.conteo} CFDI suman</div>
+      <dl>${detalle}${pagos ? '<div class="sep"></div>' + pagos : ''}
+        ${fuera ? '<div class="sep"></div>' + fuera : ''}</dl>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- Avisos ---------- */
+function pintarAvisos(t){
+  const a = [];
+  const tc = t.tipos_cambio || {};
+  const divisas = Object.keys(tc).filter(k => k !== 'MXN');
+  if (divisas.length){
+    const det = divisas.map(k => {
+      const i = tc[k];
+      return `<b>${esc(i.moneda || k)}</b> a ${Number(i.tasa).toFixed(4)} MXN (${esc(i.fuente)})`;
+    }).join('; ');
+    a.push(`Se convirtió a pesos usando: ${det}. Son tasas de <b>mercado</b>, no el tipo de
+            cambio DOF. Para declarar, captura el DOF en <code>tipos_cambio_fijos</code>
+            de config_reglas.json.`);
+  }
+  const personales = (t.bloques||[]).reduce((a, b) => a + ((b.deducciones_personales||{}).conteo||0), 0);
+  const montoPersonales = (t.bloques||[]).reduce((a, b) => a + ((b.deducciones_personales||{}).monto||0), 0);
+  if (personales)
+    a.push(`${personales} CFDI por ${mx(montoPersonales)} son <b>deducciones personales</b>
+            (honorarios médicos, colegiaturas y similares). No son deducción autorizada
+            de la actividad: van en la declaración anual, con sus propios topes.`);
+  const combus = (t.bloques||[]).reduce((a, b) => a + ((b.combustible_rechazado||{}).conteo||0), 0);
+  if (combus)
+    a.push(`${combus} CFDI de <b>combustible</b> no se pagaron por medio bancario:
+            el Art. 27 F-III LISR lo exige sin importar el monto.`);
+  if (t.conteo_notas_credito)
+    a.push(`${t.conteo_notas_credito} nota(s) de crédito por ${mx(t.total_notas_credito)}
+            se muestran pero <b>no</b> se suman, en ningún archivo.`);
+  if (t.conteo_ppd_excluido)
+    a.push(`${t.conteo_ppd_excluido} CFDI timbrado(s) en <b>PPD</b> por ${mx(t.total_ppd_excluido)}
+            quedan fuera de la suma: acumulan o deducen con su REP.`);
+  if (t.importes_incompletos)
+    a.push(`${t.importes_incompletos} CFDI no traen ni subtotal ni impuestos en el archivo de
+            origen: solo se conoce su Total. Pon <code>"iva_por_defecto": 0.16</code> en
+            config_reglas.json si quieres que el sistema los desglose al 16%.`);
+  if (t.iva_calculado)
+    a.push(`${t.iva_calculado} CFDI traían el IVA en blanco y se calculó a partir del subtotal
+            y el total.`);
+  if (t.filas_forzadas_por_color)
+    a.push(`${t.filas_forzadas_por_color} fila(s) sin tipo de comprobante se reclasificaron como
+            nota de crédito por su color rojo.`);
+  if (t.conflictos_color)
+    a.push(`${t.conflictos_color} fila(s) están en rojo pero declaran tipo "I": revísalas en la
+            pestaña <b>Revisar color</b>.`);
+  $('#mensajes').innerHTML = a.length ? `<div class="aviso">⚠ ${a.join('<br>')}</div>` : '';
+}
+
+/* ---------- Tabla ---------- */
+const badge = v => {
+  const s = String(v);
+  const c = /Rechazad|Cancelad/.test(s) ? 'b-res'
+          : /no suma|PPD/.test(s) ? 'b-off'
+          : /Nómina|Nomina/.test(s) ? 'b-nom'
+          : /Pago|REP/.test(s) ? 'b-pag' : 'b-sum';
+  return `<span class="badge ${c}">${esc(s)}</span>`;
+};
+
+function celda(f, c){
+  if (c.tasa){
+    const v = Number(f[c.k]) || 1;
+    return `<td class="num">${v === 1 ? '—' : v.toFixed(4)}</td>`;
+  }
+  if (c.num){
+    const cur = c.moneda ? (f[c.moneda] || 'MXN') : 'MXN';
+    const v = Number(f[c.k]) || 0;
+    if (c.fuerte)
+      return `<td class="num"><b style="color:${v ? '#4ade80' : '#8b9bb0'}">${money(v, 'MXN', true)}</b></td>`;
+    return `<td class="num">${money(v, cur, true)}<span class="sub">${esc(cur)}</span></td>`;
+  }
+  if (c.badge) return `<td>${f[c.k] ? badge(f[c.k]) : '—'}</td>`;
+  let v = String(f[c.k] ?? '');
+  if (c.corte && v.length > c.corte) v = v.slice(0, c.corte) + '…';
+  const sub = c.sub ? String(f[c.sub] ?? '') : '';
+  return `<td class="${c.clase||''}">${esc(v) || '—'}` +
+         (sub ? `<span class="sub">${esc(sub)}</span>` : '') + '</td>';
+}
+
+function pintarTabla(tb){
+  if (!tb || !tb.filas.length){
+    $('#tabla').innerHTML = '<p style="padding:24px;color:#8b9bb0">Sin registros en esta vista.</p>';
+    return;
+  }
+  const filas = tb.filas, tot = tb.totales || [];
+  const suma = k => tot.reduce((a, r) => a + Math.abs(Number(r[k]) || 0), 0);
+
+  // Solo las columnas con contenido en esta pestaña: las de importe que dan cero
+  // y las de texto que vienen vacías en todo el archivo no se pintan.
+  const conDato = k => filas.some(f => String(f[k] ?? '').trim() !== '');
+  // XXX = "sin moneda" (lo usan los complementos de pago), no es divisa extranjera
+  const hayDivisa = filas.some(f => f['Moneda Original']
+    && !['MXN', 'XXX'].includes(f['Moneda Original']));
+  const cols = COLS.filter(c => {
+    if (!(c.k in filas[0])) return false;
+    if (c.k === 'Total Original' || c.tasa) return hayDivisa;
+    if (c.num)  return suma(c.k) > 0;
+    if (c.k === 'Origen') return new Set(filas.map(f => f.Origen)).size > 1;
+    return conDato(c.k) || (c.sub && conDato(c.sub));
+  });
+
+  const thead = `<thead><tr>${cols.map(c =>
+    `<th class="${c.num || c.tasa ? 'num' : ''}">${c.t}</th>`).join('')}</tr></thead>`;
+
+  const tbody = `<tbody>${filas.map(f =>
+    `<tr class="${f._Suma === false ? 'nosuma' : ''}">${cols.map(c => celda(f, c)).join('')}</tr>`
+  ).join('')}</tbody>`;
+
+  // Pie: totales calculados en el servidor sobre TODAS las filas, no solo las visibles
+  const tfoot = tot.length ? `<tfoot>${tot.map(tt => `<tr>${cols.map((c, i) => {
+      if (c.tasa) return '<td></td>';
+      if (c.num)  return `<td class="num">${money(tt[c.k], 'MXN', true)}</td>`;
+      if (i === 0) return `<td>TOTAL<span class="sub">${tt.Comprobantes} CFDI</span></td>`;
+      return '<td></td>';
+    }).join('')}</tr>`).join('')}</tfoot>` : '';
+
+  const aviso = (tb.conteo > filas.length)
+    ? `<div class="truncado">Mostrando las primeras ${filas.length} de ${tb.conteo} filas.
+       Los totales del pie y los KPI consideran las ${tb.conteo}; el Excel las trae todas.</div>`
+    : '';
+
+  $('#tabla').innerHTML = `<table>${thead}${tbody}${tfoot}</table>${aviso}`;
+}
+</script>
+</body>
+</html>
