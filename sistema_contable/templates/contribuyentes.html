@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contribuyentes · e.firma y descarga del SAT</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#161d26; --panel2:#1d2630; --line:#2a3542;
+    --txt:#e6edf3; --muted:#8b9bb0; --acc:#3b82f6; --ok:#22c55e; --no:#ef4444; --warn:#f59e0b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 "Segoe UI",system-ui,sans-serif}
+  header{padding:22px 28px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#16202c,#0f1419)}
+  header h1{margin:0;font-size:20px}
+  header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+  header a{color:var(--acc);text-decoration:none;font-size:13px}
+  main{max-width:1200px;margin:0 auto;padding:22px 20px 60px}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:18px}
+  h2{margin:0 0 12px;font-size:15px}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  input,select,textarea{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+        border-radius:8px;padding:9px 11px;font:inherit}
+  input[type=file]{padding:7px}
+  .fila{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  button{border:0;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer}
+  .primario{background:var(--acc);color:#fff} .primario:disabled{background:#33404f;color:#7b8794;cursor:not-allowed}
+  .peligro{background:#3a1d1f;color:#fca5a5;border:1px solid #5b2a2d}
+  .fantasma{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .acciones{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--muted);font-size:11px;letter-spacing:.6px;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700}
+  .b-ok{background:#12301f;color:#4ade80} .b-no{background:#3a1d1f;color:#fca5a5} .b-warn{background:#3a2d12;color:#fbbf24} .b-info{background:#14263d;color:#7dd3fc}
+  .msg{margin:10px 0;padding:10px 12px;border-radius:8px;font-size:13px}
+  .msg.error{background:#3a1d1f;color:#fca5a5;border:1px solid #5b2a2d}
+  .msg.ok{background:#12301f;color:#86efac;border:1px solid #1e4a2e}
+  .msg.aviso{background:#3a2d12;color:#fcd34d;border:1px solid #5b4a1e}
+  .nota{color:var(--muted);font-size:12px}
+  .oculto{display:none}
+  code{background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:12px}
+  .mono{font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔐 Contribuyentes · e.firma y descarga masiva del SAT</h1>
+  <p><a href="/">← Volver al auditor de CFDI</a> · Las e.firma se guardan <b>cifradas</b> con tu frase maestra. Nada sale de tu equipo sin cifrar.</p>
+</header>
+<main>
+  <div id="mensajes"></div>
+
+  <!-- 1. BOVEDA -->
+  <section id="secBoveda">
+    <h2>1 · Bóveda de e.firma</h2>
+    <div id="estadoBoveda" class="nota">Cargando…</div>
+    <div id="formCrear" class="oculto">
+      <div class="msg aviso">Aún no existe la bóveda. Crea una <b>frase maestra larga</b> (mínimo 12 caracteres; mejor 4 palabras sin relación).
+        <b>No se puede recuperar</b>: si la pierdes, las e.firma guardadas no se pueden abrir. Anótala en un lugar físico seguro.</div>
+      <div class="fila">
+        <div><label>Frase maestra</label><input type="password" id="fraseNueva" autocomplete="new-password"></div>
+        <div><label>Repite la frase</label><input type="password" id="fraseNueva2" autocomplete="new-password"></div>
+      </div>
+      <div class="acciones"><button class="primario" id="btnCrear">Crear bóveda</button></div>
+    </div>
+    <div id="formAbrir" class="oculto">
+      <div class="fila"><div><label>Frase maestra</label><input type="password" id="fraseAbrir" autocomplete="current-password"></div></div>
+      <div class="acciones"><button class="primario" id="btnAbrir">Abrir bóveda</button></div>
+    </div>
+    <div id="boveAbierta" class="oculto">
+      <span class="badge b-ok">Abierta</span>
+      <span class="nota"> Se cierra sola tras unos minutos sin usarla.</span>
+      <div class="acciones"><button class="fantasma" id="btnCerrar">Cerrar bóveda</button>
+        <button class="fantasma" id="btnBitacora">Ver bitácora de accesos</button></div>
+      <div id="bitacora" class="oculto" style="margin-top:10px"></div>
+    </div>
+    <p class="nota" style="margin-top:12px">Ubicación del archivo cifrado: <code id="rutaBoveda"></code><br>
+      Para usarla desde otra computadora, apunta <code>ruta_boveda</code> (en <code>config_reglas.json</code>) a una carpeta sincronizada
+      (OneDrive, Google Drive, Dropbox) o a un USB. Como el archivo sale ya cifrado, la nube solo guarda datos ilegibles.
+      No la abras en dos equipos a la vez.</p>
+  </section>
+
+  <!-- 2. CONTRIBUYENTES -->
+  <section id="secContrib" class="oculto">
+    <h2>2 · Contribuyentes</h2>
+    <div id="tablaContrib"></div>
+    <h2 style="margin-top:20px">Agregar o reemplazar una e.firma</h2>
+    <div class="msg aviso">La e.firma equivale a la firma del contribuyente. Úsala solo con su <b>autorización por escrito</b>.
+      Se valida que el .key abra con la contraseña y que corresponda al .cer.</div>
+    <div class="fila">
+      <div><label>Certificado (.cer)</label><input type="file" id="fCer" accept=".cer"></div>
+      <div><label>Llave privada (.key)</label><input type="file" id="fKey" accept=".key"></div>
+      <div><label>Contraseña de la llave</label><input type="password" id="fPass" autocomplete="off"></div>
+    </div>
+    <div class="fila">
+      <div><label>Nombre o razón social (opcional)</label><input id="fNombre"></div>
+      <div><label>Notas (opcional)</label><input id="fNotas" placeholder="Ej. autorización firmada el 12/11/2026"></div>
+    </div>
+    <div class="acciones"><button class="primario" id="btnAgregar">Guardar en la bóveda</button></div>
+  </section>
+
+  <!-- 3. DESCARGA -->
+  <section id="secSat" class="oculto">
+    <h2>3 · Descarga masiva del SAT</h2>
+    <div class="fila">
+      <div><label>Contribuyente</label><select id="sRfc"></select></div>
+      <div><label>Tipo</label><select id="sTipo"><option value="recibidos">Recibidos (gastos)</option><option value="emitidos">Emitidos (ingresos)</option></select></div>
+      <div><label>Formato</label><select id="sFormato"><option value="CFDI">XML (CFDI completos)</option><option value="Metadata">Metadata (incluye cancelados)</option></select></div>
+      <div><label>Desde</label><input type="date" id="sDesde"></div>
+      <div><label>Hasta</label><input type="date" id="sHasta"></div>
+    </div>
+    <div class="acciones"><button class="primario" id="btnSolicitar">Solicitar al SAT</button>
+      <button class="fantasma" id="btnRefrescar">Actualizar lista</button></div>
+    <p class="nota">El SAT prepara la descarga en segundo plano (de minutos a horas). Pide <b>periodos mensuales</b> y no repitas
+      la misma solicitud: el SAT la rechaza. Cuando salga <i>Terminada</i>, pulsa <b>Descargar</b>.</p>
+    <div id="tablaSat" style="margin-top:10px"></div>
+    <div class="acciones">
+      <label style="display:inline-flex;gap:6px;align-items:center;margin:0;color:var(--txt)">
+        <input type="checkbox" id="chkEstatus" style="width:auto"> Verificar cancelaciones en el SAT al procesar</label>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const H = {'X-Sistema': '1'};
+const HJ = {'X-Sistema': '1', 'Content-Type': 'application/json'};
+
+function msg(tipo, texto){
+  const d = document.createElement('div'); d.className = 'msg ' + tipo; d.textContent = texto;
+  $('#mensajes').prepend(d); setTimeout(() => d.remove(), tipo === 'error' ? 12000 : 6000);
+}
+async function api(url, opciones = {}){
+  const r = await fetch(url, {headers: H, ...opciones});
+  const j = await r.json().catch(() => ({ok:false, error:'Respuesta no valida del servidor'}));
+  if (r.status === 401 && /cerrada/i.test(j.error || '')) { await estado(); }
+  return j;
+}
+const post = (url, cuerpo) => api(url, {method:'POST', headers: HJ, body: JSON.stringify(cuerpo || {})});
+
+/* ---------- Bóveda ---------- */
+async function estado(){
+  const e = await api('/boveda/estado');
+  $('#rutaBoveda').textContent = e.ruta || '';
+  $('#formCrear').classList.toggle('oculto', e.existe);
+  $('#formAbrir').classList.toggle('oculto', !e.existe || e.abierta);
+  $('#boveAbierta').classList.toggle('oculto', !e.abierta);
+  $('#estadoBoveda').textContent = e.abierta ? '' : (e.existe ? 'La bóveda está cerrada.' : '');
+  $('#secContrib').classList.toggle('oculto', !e.abierta);
+  $('#secSat').classList.toggle('oculto', !e.abierta);
+  if (e.abierta) { await lista(); await solicitudes(); }
+}
+$('#btnCrear').onclick = async () => {
+  const a = $('#fraseNueva').value, b = $('#fraseNueva2').value;
+  if (a !== b) return msg('error', 'Las dos frases no coinciden.');
+  const j = await post('/boveda/crear', {frase: a});
+  if (!j.ok) return msg('error', j.error);
+  $('#fraseNueva').value = $('#fraseNueva2').value = '';
+  const k = await post('/boveda/abrir', {frase: a}); // abre de inmediato
+  msg('ok', 'Bóveda creada.'); await estado();
+};
+$('#btnAbrir').onclick = async () => {
+  const j = await post('/boveda/abrir', {frase: $('#fraseAbrir').value});
+  $('#fraseAbrir').value = '';
+  if (!j.ok) return msg('error', j.error);
+  await estado();
+};
+$('#fraseAbrir').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnAbrir').click(); });
+$('#btnCerrar').onclick = async () => { await post('/boveda/cerrar'); await estado(); };
+$('#btnBitacora').onclick = async () => {
+  const j = await api('/boveda/bitacora'); if (!j.ok) return msg('error', j.error);
+  $('#bitacora').classList.toggle('oculto');
+  $('#bitacora').innerHTML = '<table><tr><th>Cuándo</th><th>Acción</th><th>RFC</th></tr>' +
+    j.bitacora.map(b => `<tr><td>${esc(b.cuando)}</td><td>${esc(b.accion)}</td><td class="mono">${esc(b.rfc)}</td></tr>`).join('') + '</table>';
+};
+
+/* ---------- Contribuyentes ---------- */
+let CONTRIB = [];
+async function lista(){
+  const j = await api('/boveda/lista'); if (!j.ok) return;
+  CONTRIB = j.contribuyentes;
+  if (!CONTRIB.length) { $('#tablaContrib').innerHTML = '<p class="nota">Todavía no hay e.firma guardadas.</p>'; }
+  else {
+    $('#tablaContrib').innerHTML = '<table><tr><th>RFC</th><th>Nombre</th><th>Serie</th><th>Vigencia</th><th>Notas</th><th></th></tr>' +
+      CONTRIB.map(c => {
+        const d = c.dias_restantes;
+        const b = d === null ? '' : d < 0 ? `<span class="badge b-no">Vencida</span>` :
+                  d <= 60 ? `<span class="badge b-warn">Vence en ${d} d</span>` : `<span class="badge b-ok">${d} días</span>`;
+        return `<tr><td class="mono">${esc(c.rfc)}</td><td>${esc(c.nombre)}</td><td class="mono">${esc(c.serie)}</td>
+          <td>${esc(c.vence)} ${b}</td><td>${esc(c.notas)}</td>
+          <td style="white-space:nowrap"><button class="fantasma" data-rev="${esc(c.rfc)}">Ver contraseña</button>
+          <button class="peligro" data-del="${esc(c.rfc)}">Eliminar</button></td></tr>`;
+      }).join('') + '</table>';
+  }
+  $('#sRfc').innerHTML = CONTRIB.map(c => `<option value="${esc(c.rfc)}">${esc(c.rfc)} · ${esc(c.nombre)}</option>`).join('');
+  document.querySelectorAll('[data-rev]').forEach(b => b.onclick = async () => {
+    const frase = prompt('Para ver la contraseña, vuelve a escribir tu frase maestra:'); if (!frase) return;
+    const j = await post('/boveda/revelar', {rfc: b.dataset.rev, frase});
+    if (!j.ok) return msg('error', j.error);
+    prompt('Contraseña de la e.firma de ' + b.dataset.rev + ' (cópiala y cierra):', j.password);
+  });
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('¿Eliminar la e.firma de ' + b.dataset.del + ' de la bóveda? No se puede deshacer.')) return;
+    const j = await post('/boveda/eliminar', {rfc: b.dataset.del});
+    if (!j.ok) return msg('error', j.error);
+    msg('ok', 'Eliminada.'); await lista();
+  });
+}
+$('#btnAgregar').onclick = async () => {
+  const cer = $('#fCer').files[0], key = $('#fKey').files[0];
+  if (!cer || !key) return msg('error', 'Elige el .cer y el .key.');
+  const fd = new FormData();
+  fd.append('cer', cer); fd.append('key', key);
+  fd.append('password', $('#fPass').value); fd.append('nombre', $('#fNombre').value); fd.append('notas', $('#fNotas').value);
+  const r = await fetch('/boveda/agregar', {method:'POST', headers: H, body: fd});
+  const j = await r.json();
+  if (!j.ok) return msg('error', j.error);
+  ['#fCer','#fKey','#fPass','#fNombre','#fNotas'].forEach(s => $(s).value = '');
+  msg('ok', 'Guardada la e.firma de ' + j.contribuyente.rfc + ' (vence ' + j.contribuyente.vence + ').');
+  await lista();
+};
+
+/* ---------- Descarga SAT ---------- */
+const CLASE = {Aceptada:'b-info', 'En proceso':'b-warn', Terminada:'b-ok', Error:'b-no', Rechazada:'b-no', Vencida:'b-no'};
+async function solicitudes(){
+  const j = await api('/sat/solicitudes'); if (!j.ok) return;
+  if (!j.solicitudes.length) { $('#tablaSat').innerHTML = '<p class="nota">Aún no hay solicitudes.</p>'; return; }
+  $('#tablaSat').innerHTML = '<table><tr><th></th><th>RFC</th><th>Tipo</th><th>Periodo</th><th>Estado</th><th>CFDI</th><th>Archivos</th><th></th></tr>' +
+    j.solicitudes.map(s => `<tr>
+      <td><input type="checkbox" class="chkSol" value="${esc(s.id)}" data-rfc="${esc(s.rfc)}" ${s.archivos.length ? '' : 'disabled'} style="width:auto"></td>
+      <td class="mono">${esc(s.rfc)}</td><td>${esc(s.tipo)} · ${esc(s.formato)}</td><td>${esc(s.desde)} → ${esc(s.hasta)}</td>
+      <td><span class="badge ${CLASE[s.estado] || 'b-info'}">${esc(s.estado)}</span></td>
+      <td>${s.numero_cfdis ?? ''}</td><td>${s.archivos.length}</td>
+      <td style="white-space:nowrap"><button class="fantasma" data-ver="${esc(s.id)}">Verificar</button>
+        <button class="primario" data-bajar="${esc(s.id)}" ${s.codigo_estado === '3' ? '' : 'disabled'}>Descargar</button></td></tr>`).join('') +
+    '</table><div class="acciones"><button class="primario" id="btnProcesar">Procesar lo seleccionado con el auditor</button></div>';
+  document.querySelectorAll('[data-ver]').forEach(b => b.onclick = async () => {
+    b.disabled = true; const j = await post('/sat/verificar', {id: b.dataset.ver});
+    if (!j.ok) msg('error', j.error); else msg('ok', 'Solicitud ' + j.solicitud.estado + (j.solicitud.numero_cfdis != null ? ' · ' + j.solicitud.numero_cfdis + ' CFDI' : ''));
+    await solicitudes();
+  });
+  document.querySelectorAll('[data-bajar]').forEach(b => b.onclick = async () => {
+    b.disabled = true; b.textContent = 'Descargando…';
+    const j = await post('/sat/descargar', {id: b.dataset.bajar});
+    if (!j.ok) msg('error', j.error); else msg('ok', 'Descargado: ' + j.solicitud.archivos.length + ' archivo(s).');
+    await solicitudes();
+  });
+  $('#btnProcesar').onclick = async () => {
+    const marcadas = [...document.querySelectorAll('.chkSol:checked')];
+    if (!marcadas.length) return msg('error', 'Marca al menos una solicitud descargada.');
+    const rfcs = [...new Set(marcadas.map(m => m.dataset.rfc))];
+    if (rfcs.length > 1) return msg('error', 'Procesa un contribuyente a la vez.');
+    const b = $('#btnProcesar'); b.disabled = true; b.textContent = 'Procesando…';
+    const j = await post('/sat/procesar', {ids: marcadas.map(m => m.value), rfc: rfcs[0], verificar_estatus_sat: $('#chkEstatus').checked});
+    b.disabled = false; b.textContent = 'Procesar lo seleccionado con el auditor';
+    if (!j.ok) return msg('error', j.error);
+    location.href = '/?resultado=' + encodeURIComponent(j.id_sesion);
+  };
+}
+$('#btnSolicitar').onclick = async () => {
+  const j = await post('/sat/solicitar', {rfc: $('#sRfc').value, tipo: $('#sTipo').value, formato: $('#sFormato').value,
+                                          desde: $('#sDesde').value, hasta: $('#sHasta').value});
+  if (!j.ok) return msg('error', j.error);
+  msg('ok', 'Solicitud enviada al SAT (id ' + j.solicitud.id + '). Verifícala en unos minutos.');
+  await solicitudes();
+};
+$('#btnRefrescar').onclick = solicitudes;
+
+estado();
+</script>
+</body>
+</html>

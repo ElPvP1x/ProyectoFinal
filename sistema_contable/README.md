@@ -127,8 +127,77 @@ viaticos, el uso personal de autos y celulares, y el prorrateo de IVA con activi
 
 **Lo del documento que aun no esta en el sistema:** topes de viaticos ($750 / $1,500 / $850 /
 $3,850, necesitan los dias y el contexto de hospedaje o transporte), el numero de permiso del
-complemento de combustible y la consulta de estatus al SAT en linea. El tope global de
+complemento de combustible. El tope global de
 deducciones personales no separa retiro ni discapacidad (el CFDI no lo dice): restalos a mano.
+
+## Cancelaciones, e.firma y descarga masiva del SAT
+
+Tres piezas nuevas. Se usan desde la pantalla **/contribuyentes** (enlace en la pagina principal).
+
+### 1. Estatus y cancelacion en linea (`estatus_sat.py`)
+
+El XML no sabe si el CFDI se cancelo despues de timbrarse. Con la casilla **«Verificar cancelaciones
+en el SAT»** (o `verificar_estatus_sat: true`) el sistema consulta el servicio publico de «Consulta de CFDI»
+del SAT por cada UUID. **No necesita e.firma.**
+
+| Resultado del SAT | Que hace el sistema |
+|---|---|
+| **Cancelado** | Estatus «Cancelado»: no suma, ni su IVA (regla de siempre) |
+| **Vigente** | Corrige cualquier cancelado por error de la metadata |
+| **Vigente, cancelacion «En proceso»** | Suma, pero con alerta: vigilar el resultado |
+| **No encontrado** | Suma, pero con alerta (puede ser un total mal capturado o un CFDI sin timbrar). No se rechaza solo |
+| Codigo EFOS distinto de 200 | Alerta para confirmar contra la lista 69-B (el codigo se muestra tal cual) |
+| El SAT no responde | Conserva su estatus anterior y avisa cuantos faltaron: reintenta despues |
+
+Detalles: va **antes** de convertir divisas (el SAT compara contra el total original); consulta en paralelo
+(`estatus_sat_hilos`, 4); guarda cache en `cache_estatus_sat.json` (lo cancelado es definitivo; lo vigente se
+vuelve a consultar a las `estatus_sat_horas_cache`, 24). Calcula unos 2 minutos por cada mil CFDI.
+
+### 2. Boveda cifrada de e.firma (`boveda.py`)
+
+Guarda el `.cer`, el `.key` y la contrasena de cada contribuyente en **un solo archivo cifrado**.
+
+* **Cifrado:** AES-256-GCM; la llave sale de tu **frase maestra** con scrypt. La frase no se guarda: si se
+  pierde, nadie recupera la boveda. Ni los RFC ni los nombres se ven sin la frase.
+* **Al agregar una e.firma** se valida que el `.cer` sea vigente, que el RFC coincida, que la contrasena abra el
+  `.key` y que el `.key` corresponda al `.cer`. Se muestra la vigencia y se marca lo que vence en menos de 60 dias.
+* **Ver una contrasena** exige volver a escribir la frase maestra. **Bitacora** de cada uso (sin secretos).
+* Se **cierra sola** tras 15 minutos sin usarse (`boveda_minutos_inactividad`).
+* **Control de version:** si otro equipo cambio la boveda, no se sobrescribe a ciegas.
+* Las rutas web solo aceptan peticiones desde esta misma pagina y desde `localhost` (contra paginas ajenas que
+  apunten a tu equipo).
+
+**Usarla desde cualquier computadora.** Pon `ruta_boveda` en `config_reglas.json` dentro de una carpeta
+sincronizada (OneDrive, Google Drive, Dropbox) o en un USB, e instala el sistema en cada equipo. Como el cifrado ocurre
+en tu computadora antes de sincronizar, **la nube solo guarda un archivo ilegible**. No abras la boveda en dos
+equipos a la vez; deja que sincronice antes de abrirla en otro.
+
+Alternativas si prefieres un servicio ya hecho (cifrado de extremo a extremo; guardan archivos adjuntos): un
+administrador de contrasenas como Bitwarden o 1Password, KeePassXC con el archivo `.kdbx` sincronizado, o
+Cryptomator sobre cualquier nube. La ventaja de la boveda de este sistema es que la descarga del SAT la usa directo.
+
+> **Aviso legal y de seguridad.** La e.firma tiene el mismo valor que la firma autografa del contribuyente. Usala
+> solo con su **autorizacion por escrito**. Nunca la subas a git (el `.gitignore` bloquea `*.cer`, `*.key`, `*.enc` y
+> `boveda/`), ni la mandes por correo o chat. Haz un **respaldo** del archivo cifrado (`respaldar`) y guarda la frase
+> en un lugar fisico seguro. Una frase debil o una computadora con virus anulan la proteccion.
+
+### 3. Descarga masiva del SAT (`descarga_sat.py`)
+
+Usa el servicio web «Descarga Masiva de CFDI» con la e.firma de la boveda. Es asincrono:
+
+1. **Solicitar** (contribuyente, emitidos o recibidos, XML o Metadata, rango de fechas).
+2. **Verificar** hasta que salga *Terminada* (de minutos a horas).
+3. **Descargar:** los ZIP quedan en `descargas/<RFC>/<tipo>/...zip` y no se vuelven a bajar.
+4. **Procesar** los seleccionados con el auditor (abre el dashboard con el resultado).
+
+Cuidados: pide **periodos mensuales** y no repitas la misma solicitud (el SAT la rechaza); hay limites de
+solicitudes y de CFDI por solicitud que el SAT cambia (confirmalos en su documentacion); de **recibidos** el SAT solo
+entrega XML vigentes: para ver cancelados pide la **Metadata** o activa la consulta de estatus.
+
+**Pruebas** (`pruebas/`): `prueba_boveda.py`, `prueba_descarga_sat.py`, `prueba_app.py`, `prueba_reglas_md.py`.
+Usan e.firma y CFDI **sinteticos** y un SAT **simulado**. **No han probado el protocolo contra el servidor real
+del SAT**, porque eso exige una e.firma verdadera: la primera vez, prueba con un contribuyente y un mes chico.
+La consulta de estatus si se probo contra el servicio real del SAT con datos de mentira (responde «No Encontrado»).
 
 ## Tipos de comprobante escritos con palabras
 

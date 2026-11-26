@@ -127,7 +127,10 @@
 
   <div class="acciones">
     <button class="primario" id="btnProcesar" disabled>Procesar y auditar</button>
+    <label style="display:inline-flex;gap:6px;align-items:center;font-size:.85rem" title="Consulta en el SAT si cada factura sigue vigente o ya se cancelo. Tarda unos 2 minutos por cada mil facturas.">
+      <input type="checkbox" id="chkEstatus"> Verificar cancelaciones en el SAT</label>
     <button class="fantasma" id="btnLimpiar">Limpiar</button>
+    <a class="fantasma" href="/contribuyentes" style="text-decoration:none;padding:9px 14px;border-radius:8px;border:1px solid var(--borde,#ccd)">🔐 Contribuyentes y descarga SAT</a>
     <button class="primario oculto" id="btnDescargar" style="background:var(--ok)">⬇ Descargar Excel depurado</button>
   </div>
 
@@ -248,6 +251,7 @@ $('#btnProcesar').onclick = async () => {
   $('#mensajes').innerHTML = '';
   const fd = new FormData();
   archivos.forEach(f => fd.append('archivos', f));
+  if ($('#chkEstatus').checked) fd.append('verificar_estatus_sat', '1');
   try {
     const r = await fetch('/procesar', {method:'POST', body: fd});
     const j = await r.json();
@@ -259,6 +263,18 @@ $('#btnProcesar').onclick = async () => {
     btn.disabled = false; btn.textContent = 'Procesar y auditar';
   }
 };
+
+/* ---------- Abrir un resultado ya procesado (viene de /contribuyentes) ---------- */
+(async () => {
+  const id = new URLSearchParams(location.search).get('resultado');
+  if (!id) return;
+  try {
+    const r = await fetch('/resultado/' + encodeURIComponent(id), {headers: {'X-Sistema': '1'}});
+    const j = await r.json();
+    if (j.ok) { datos = j; pestana = j.orden_tablas[0]; render(); }
+    else $('#mensajes').innerHTML = `<div class="error"><b>Error:</b> ${esc(j.error)}</div>`;
+  } catch (e) { /* si falla, la pagina queda vacia como siempre */ }
+})();
 
 /* ---------- Render ---------- */
 function render(){

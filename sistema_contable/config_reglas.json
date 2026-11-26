@@ -103,6 +103,17 @@
   "uma_diaria": 117.31,
   "ingresos_anuales": null,
 
+  "_estatus_sat": "Consulta en linea el estatus de cada CFDI en el SAT (vigente, cancelado, en proceso de cancelacion). No necesita e.firma. Tarda: unos 2 minutos por cada mil CFDI. Un CFDI cancelado nunca suma. Con divisas, el SAT compara contra el total original.",
+  "verificar_estatus_sat": false,
+  "estatus_sat_hilos": 4,
+  "estatus_sat_timeout": 15,
+  "estatus_sat_horas_cache": 24,
+
+  "_boveda": "Boveda cifrada de e.firma. ruta_boveda puede apuntar a una carpeta sincronizada (OneDrive, Google Drive, Dropbox) para abrirla desde cualquier equipo: el archivo ya sale cifrado. No la abras en dos equipos a la vez.",
+  "ruta_boveda": "boveda/boveda.enc",
+  "boveda_minutos_inactividad": 15,
+  "carpeta_descargas": "descargas",
+
   "_alertas": "Avisos que no cambian la suma: nota de credito sin relacion, descripcion generica, PUE con forma 99, retenciones faltantes o mal calculadas, datos del receptor, proveedor 69-B presunto.",
   "alertas": true,
 

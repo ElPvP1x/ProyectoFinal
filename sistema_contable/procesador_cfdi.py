@@ -27,6 +27,7 @@ import pandas as pd
 
 import lector_xml
 import perfiles
+import estatus_sat
 import reglas_md
 from tipo_cambio import obtener_tasa as tc_obtener_tasa
 
@@ -872,7 +873,9 @@ def preparar_dataframe(df: pd.DataFrame, config: Dict[str, Any]) -> pd.DataFrame
                          ("Regimen Receptor", ""), ("Archivo XML", ""),
                          ("Tipo Relacion", ""), ("CFDI Relacionados", ""),
                          ("UUID Sustituidos", ""), ("CP Receptor", ""),
-                         ("Factura Global", False)):
+                         ("Factura Global", False),
+                         ("Estatus SAT Consulta", ""), ("Cancelacion SAT", ""),
+                         ("EFOS SAT", ""), ("Es Cancelable", "")):
         if col not in df.columns:
             df[col] = defecto
     for bandera in ("_Es_Rojo", "_Es_Rojo_Fuente", "_Es_Rojo_Relleno"):
@@ -1608,6 +1611,7 @@ COLUMNAS_SALIDA = [
     "Percepciones", "Deducciones", "Otros Pagos",
     "Total", "Monto Pagado", "Importe Computado", "IVA Acreditable", "Suma",
     "Clasificacion", "Regla Aplicada", "Motivo de Rechazo", "Alertas",
+    "Estatus SAT Consulta", "Cancelacion SAT",
 ]
 
 # Columnas que se ocultan en una hoja cuando valen 0 en todos sus renglones
@@ -1727,6 +1731,13 @@ def _filas_resumen(totales: Dict[str, Any]) -> List[Tuple[Any, Any]]:
         f.append(("   Excede el tope global", tp["excede"]))
     if totales.get("iva_inversiones"):
         f.append(("IVA acreditable de inversiones (incluido arriba)", totales["iva_inversiones"]))
+    es = totales.get("estatus_sat") or {}
+    if es:
+        f += [("", ""), ("--- Estatus consultado en el SAT ---", ""),
+              ("CFDI consultados", es.get("total", 0)),
+              ("   Cancelados (no suman)", es.get("cancelados", 0)),
+              ("   No encontrados (revisar)", es.get("no_encontrados", 0)),
+              ("   Sin respuesta del SAT", es.get("errores", 0))]
     if totales.get("conteo_alertas"):
         f.append((f"CFDI con ALERTAS para revisar ({totales['conteo_alertas']})", totales["conteo_alertas"]))
 
@@ -2143,6 +2154,41 @@ def _asignar_origen_xml(marcos_xml: List[Tuple[pd.DataFrame, Dict[str, Any]]],
     return rfc, ambiguo
 
 
+def verificar_estatus_en_sat(df: pd.DataFrame, cfg: Dict[str, Any]
+                             ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    """
+    Consulta el estatus de cada CFDI en el SAT y corrige la columna Estatus.
+    Va ANTES de convertir divisas: el SAT compara contra el total original.
+    Si el SAT no responde para un CFDI, su estatus queda como estaba (no se inventa).
+    """
+    base = df[(df["UUID"].astype(str).str.strip() != "") & (df["RFC Emisor"] != "")
+              & (df["RFC Receptor"] != "")]
+    cfdis = [{"uuid": str(r["UUID"]), "rfc_emisor": r["RFC Emisor"], "rfc_receptor": r["RFC Receptor"],
+              "total": float(r["Total"] or 0)} for _, r in base.iterrows()]
+    resultados, resumen = estatus_sat.verificar_lote(
+        cfdis, hilos=int(cfg.get("estatus_sat_hilos", 4)),
+        timeout=int(cfg.get("estatus_sat_timeout", 15)),
+        horas_cache=float(cfg.get("estatus_sat_horas_cache", 24)),
+        ruta_cache=cfg.get("estatus_sat_cache") or estatus_sat.RUTA_CACHE,
+        consultor=estatus_sat.consultar)
+    if not resultados:
+        return df, resumen
+
+    df = df.copy()
+    uuids = df["UUID"].astype(str).str.upper()
+    for col, clave in (("Estatus SAT Consulta", "estado"), ("Cancelacion SAT", "estatus_cancelacion"),
+                       ("EFOS SAT", "validacion_efos"), ("Es Cancelable", "es_cancelable")):
+        df[col] = uuids.map(lambda u, k=clave: resultados.get(u, {}).get(k, ""))
+    cancelado = df["Estatus SAT Consulta"] == "Cancelado"
+    vigente = df["Estatus SAT Consulta"] == "Vigente"
+    # El SAT en linea manda sobre la metadata y sobre el supuesto "Vigente" del XML
+    df.loc[cancelado, "Estatus"] = "Cancelado"
+    df.loc[vigente, "Estatus"] = "Vigente"
+    resumen["no_verificados"] = int((df["UUID"].astype(str).str.strip() != "").sum()
+                                    - df["Estatus SAT Consulta"].astype(bool).sum())
+    return df, resumen
+
+
 def _tope_global_personales(df: pd.DataFrame, cfg: Dict[str, Any]) -> Dict[str, Any]:
     """
     Tope global de deducciones personales [Ley: LISR 151, ultimo parrafo]: lo menor entre
@@ -2281,6 +2327,18 @@ def procesar_archivos(rutas: List[str], config: Optional[Dict[str, Any]] = None,
     df["_Tiene_REP"] = df["UUID"].astype(str).str.upper().isin(pagados)
     df["_Hay_REP_en_tanda"] = bool((df["Tipo Comprobante"] == "P").any())
 
+    if bool(cfg.get("verificar_estatus_sat", False)):
+        df, res_sat = verificar_estatus_en_sat(df, cfg)
+        aviso = (f"Estatus en el SAT: {res_sat['total']} CFDI, {res_sat.get('cancelados', 0)} cancelados, "
+                 f"{res_sat.get('no_encontrados', 0)} no encontrados, {res_sat['errores']} sin respuesta "
+                 f"({res_sat['de_cache']} desde cache).")
+        if res_sat["errores"]:
+            aviso += " Los que no respondieron conservan su estatus anterior: reintenta mas tarde."
+        diagnosticos.append({"archivo": "(estatus SAT)", "avisos": [aviso] + res_sat["mensajes_error"]})
+        totales_sat = res_sat
+    else:
+        totales_sat = None
+
     df, tipos_cambio, avisos_tc = convertir_a_mxn(df, cfg)
     if avisos_tc:
         diagnosticos.append({"archivo": "(tipo de cambio)", "avisos": avisos_tc})
@@ -2288,6 +2346,7 @@ def procesar_archivos(rutas: List[str], config: Optional[Dict[str, Any]] = None,
     df = aplicar_reglas(df, cfg)
     totales = calcular_totales(df)
     totales["tipos_cambio"] = tipos_cambio
+    totales["estatus_sat"] = totales_sat or {}
     totales["deducciones_personales_tope"] = _tope_global_personales(df, cfg)
 
     # El perfil del contribuyente se arma solo con lo que traen los CFDI:

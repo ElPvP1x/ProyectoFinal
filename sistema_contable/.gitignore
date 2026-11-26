@@ -1,9 +1,16 @@
-# Datos reales de clientes: nunca al repositorio
+# Datos reales de clientes y secretos: NUNCA al repositorio
 pruebas_reales/
 perfiles/
+boveda/
+*.enc
+*.enc.bak
+*.cer
+*.key
+descargas/
+cache_estatus_sat.json
+tipo_cambio_cache.json
 *.log
 *.err
-tipo_cambio_cache.json
 __pycache__/
 .venv/
 trabajo/

@@ -350,6 +350,19 @@ def alertas(f, ctx: Contexto, tope_tolerancia: float = 1.0) -> List[str]:
             out.append(f"Regimen del receptor ({f.get('Regimen Receptor')}) distinto al de la constancia "
                        f"({ctx.regimen_contribuyente}): pedir sustitucion (CFF 29-A)")
 
+    # Estatus consultado en el SAT (solo existe si se activo verificar_estatus_sat)
+    est = str(f.get("Estatus SAT Consulta") or "")
+    canc = str(f.get("Cancelacion SAT") or "")
+    if est.lower().startswith("no encontrado"):
+        out.append("El SAT no encontro este CFDI: revisa UUID, RFC y total (con divisa, el total debe ser "
+                   "el original) o puede no estar timbrado")
+    if est == "Vigente" and canc and "proceso" in _norm(canc):
+        out.append(f"Cancelacion EN PROCESO ({canc}): vigila el resultado antes de deducirla")
+    efos = str(f.get("EFOS SAT") or "").strip()
+    if efos and efos != "200":
+        out.append(f"El SAT reporta validacion EFOS con codigo {efos} (distinto de 200): confirma si el "
+                   f"emisor esta en la lista 69-B (CFF 69-B)")
+
     # PPD: ligar con su complemento de pago (REP) dentro de la tanda [Ley: LIVA 5-III]
     if tipo == "I" and metodo == "PPD" and origen in ("RECIBIDAS", "EGRESOS", "EMITIDAS"):
         if f.get("_Tiene_REP"):
